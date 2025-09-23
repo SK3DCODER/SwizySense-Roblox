@@ -36,39 +36,6 @@ local colorSchemes = {
         textLight = Color3.fromRGB(100, 110, 130),
         accent = Color3.fromRGB(255, 90, 90),
         success = Color3.fromRGB(75, 190, 100)
-    },
-    {
-        name = "Purple Dream", 
-        background = Color3.fromRGB(250, 245, 255),
-        mainBackground = Color3.fromRGB(253, 252, 255),
-        primary = Color3.fromRGB(150, 100, 230),
-        secondary = Color3.fromRGB(248, 242, 255),
-        text = Color3.fromRGB(35, 30, 45),
-        textLight = Color3.fromRGB(110, 100, 130),
-        accent = Color3.fromRGB(255, 105, 120),
-        success = Color3.fromRGB(85, 200, 110)
-    },
-    {
-        name = "Emerald Green",
-        background = Color3.fromRGB(245, 255, 250),
-        mainBackground = Color3.fromRGB(252, 255, 253),
-        primary = Color3.fromRGB(60, 180, 130),
-        secondary = Color3.fromRGB(242, 255, 248),
-        text = Color3.fromRGB(30, 45, 35),
-        textLight = Color3.fromRGB(100, 130, 110),
-        accent = Color3.fromRGB(255, 100, 90),
-        success = Color3.fromRGB(70, 190, 100)
-    },
-    {
-        name = "Sunset Orange",
-        background = Color3.fromRGB(255, 250, 245),
-        mainBackground = Color3.fromRGB(255, 252, 250),
-        primary = Color3.fromRGB(230, 120, 70),
-        secondary = Color3.fromRGB(255, 248, 242),
-        text = Color3.fromRGB(45, 35, 30),
-        textLight = Color3.fromRGB(130, 110, 100),
-        accent = Color3.fromRGB(255, 90, 120),
-        success = Color3.fromRGB(190, 150, 70)
     }
 }
 
@@ -77,8 +44,8 @@ local colors = currentScheme
 
 -- Main Frame
 local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 440, 0, 550)
-mainFrame.Position = UDim2.new(0.5, -220, 0.5, -275)
+mainFrame.Size = UDim2.new(0, 440, 0, 300)
+mainFrame.Position = UDim2.new(0.5, -220, 0.5, -150)
 mainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
 mainFrame.BackgroundColor3 = colors.mainBackground
 mainFrame.BorderSizePixel = 0
@@ -160,50 +127,26 @@ subtitle.TextTransparency = 0.7
 subtitle.ZIndex = 4
 subtitle.Parent = titleContainer
 
--- Close/Minimize buttons
-local buttonContainer = Instance.new("Frame")
-buttonContainer.Size = UDim2.new(0, 80, 0, 36)
-buttonContainer.Position = UDim2.new(1, -90, 0, 25)
-buttonContainer.BackgroundTransparency = 1
-buttonContainer.ZIndex = 4
-buttonContainer.Parent = header
-
 -- Close button
 local closeBtn = Instance.new("ImageButton")
 closeBtn.Size = UDim2.new(0, 36, 0, 36)
-closeBtn.Position = UDim2.new(1, -36, 0, 0)
+closeBtn.Position = UDim2.new(1, -46, 0, 25)
 closeBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 closeBtn.BackgroundTransparency = 0.9
 closeBtn.Image = "rbxassetid://3926307971"
 closeBtn.ImageColor3 = colors.text
 closeBtn.ImageTransparency = 0.2
 closeBtn.ZIndex = 4
-closeBtn.Parent = buttonContainer
+closeBtn.Parent = header
 
 local closeCorner = Instance.new("UICorner")
 closeCorner.CornerRadius = UDim.new(1, 0)
 closeCorner.Parent = closeBtn
 
--- Unload button (minimize)
-local unloadBtn = Instance.new("ImageButton")
-unloadBtn.Size = UDim2.new(0, 36, 0, 36)
-unloadBtn.Position = UDim2.new(0, 0, 0, 0)
-unloadBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-unloadBtn.BackgroundTransparency = 0.9
-unloadBtn.Image = "rbxassetid://3926307967"
-unloadBtn.ImageColor3 = colors.text
-unloadBtn.ImageTransparency = 0.2
-unloadBtn.ZIndex = 4
-unloadBtn.Parent = buttonContainer
-
-local unloadCorner = Instance.new("UICorner")
-unloadCorner.CornerRadius = UDim.new(1, 0)
-unloadCorner.Parent = unloadBtn
-
--- Content area
+-- Content area (empty for buttons)
 local content = Instance.new("Frame")
-content.Size = UDim2.new(1, -40, 1, -190)
-content.Position = UDim2.new(0, 20, 0, 170)
+content.Size = UDim2.new(1, -40, 1, -160)
+content.Position = UDim2.new(0, 20, 0, 160)
 content.BackgroundTransparency = 1
 content.ZIndex = 3
 content.Parent = mainFrame
@@ -367,175 +310,15 @@ local function showNotification(title, text, duration, notifType)
     end
 end
 
--- Color scheme selector button
-local colorBtn = Instance.new("TextButton")
-colorBtn.Size = UDim2.new(1, 0, 0, 55)
-colorBtn.Position = UDim2.new(0, 0, 0, 30)
-colorBtn.BackgroundColor3 = colors.primary
-colorBtn.Text = "🎨 Цвет: " .. currentScheme.name
-colorBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-colorBtn.Font = Enum.Font.GothamSemibold
-colorBtn.TextSize = 16
-colorBtn.ZIndex = 3
-colorBtn.Parent = content
-
-local colorCorner = Instance.new("UICorner")
-colorCorner.CornerRadius = UDim.new(0, 14)
-colorCorner.Parent = colorBtn
-
--- Test notification button
-local testBtn = Instance.new("TextButton")
-testBtn.Size = UDim2.new(1, 0, 0, 55)
-testBtn.Position = UDim2.new(0, 0, 0, 95)
-testBtn.BackgroundColor3 = Color3.fromRGB(80, 180, 120)
-testBtn.Text = "🔔 Тест уведомлений"
-testBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-testBtn.Font = Enum.Font.GothamSemibold
-testBtn.TextSize = 16
-testBtn.ZIndex = 3
-testBtn.Parent = content
-
-local testCorner = Instance.new("UICorner")
-testCorner.CornerRadius = UDim.new(0, 14)
-testCorner.Parent = testBtn
-
--- Unload test button
-local unloadTestBtn = Instance.new("TextButton")
-unloadTestBtn.Size = UDim2.new(1, 0, 0, 55)
-unloadTestBtn.Position = UDim2.new(0, 0, 0, 160)
-unloadTestBtn.BackgroundColor3 = Color3.fromRGB(180, 100, 100)
-unloadTestBtn.Text = "📤 Тест выгрузки"
-unloadTestBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-unloadTestBtn.Font = Enum.Font.GothamSemibold
-unloadTestBtn.TextSize = 16
-unloadTestBtn.ZIndex = 3
-unloadTestBtn.Parent = content
-
-local unloadTestCorner = Instance.new("UICorner")
-unloadTestCorner.CornerRadius = UDim.new(0, 14)
-unloadTestCorner.Parent = unloadTestBtn
-
--- INFO button
-local infoBtn = Instance.new("TextButton")
-infoBtn.Size = UDim2.new(1, 0, 0, 55)
-infoBtn.Position = UDim2.new(0, 0, 0, 225)
-infoBtn.BackgroundColor3 = Color3.fromRGB(150, 100, 200)
-infoBtn.Text = "ℹ️ Информация"
-infoBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-infoBtn.Font = Enum.Font.GothamSemibold
-infoBtn.TextSize = 16
-infoBtn.ZIndex = 3
-infoBtn.Parent = content
-
-local infoCorner = Instance.new("UICorner")
-infoCorner.CornerRadius = UDim.new(0, 14)
-infoCorner.Parent = infoBtn
-
--- Button hover effects function
-local function setupButtonHover(button, defaultColor)
-    button.MouseEnter:Connect(function()
-        TweenService:Create(button, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-            BackgroundColor3 = Color3.fromRGB(
-                math.min(defaultColor.R * 255 - 20, 255)/255,
-                math.min(defaultColor.G * 255 - 20, 255)/255,
-                math.min(defaultColor.B * 255 - 20, 255)/255
-            )
-        }):Play()
-    end)
-    
-    button.MouseLeave:Connect(function()
-        TweenService:Create(button, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-            BackgroundColor3 = defaultColor
-        }):Play()
-    end)
-end
-
-setupButtonHover(colorBtn, colors.primary)
-setupButtonHover(testBtn, Color3.fromRGB(80, 180, 120))
-setupButtonHover(unloadTestBtn, Color3.fromRGB(180, 100, 100))
-setupButtonHover(infoBtn, Color3.fromRGB(150, 100, 200))
-
--- Color scheme cycling
-local currentSchemeIndex = 1
-
-colorBtn.MouseButton1Click:Connect(function()
-    TweenService:Create(colorBtn, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-        Size = UDim2.new(0.98, 0, 0, 53)
-    }):Play()
-    
-    wait(0.1)
-    
-    TweenService:Create(colorBtn, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-        Size = UDim2.new(1, 0, 0, 55)
-    }):Play()
-    
-    currentSchemeIndex = currentSchemeIndex % #colorSchemes + 1
-    currentScheme = colorSchemes[currentSchemeIndex]
-    colors = currentScheme
-    
-    TweenService:Create(backgroundFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-        BackgroundColor3 = colors.background
-    }):Play()
-    
-    TweenService:Create(mainFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-        BackgroundColor3 = colors.mainBackground
-    }):Play()
-    
-    TweenService:Create(header, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-        BackgroundColor3 = colors.primary
-    }):Play()
-    
-    TweenService:Create(colorBtn, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-        BackgroundColor3 = colors.primary
-    }):Play()
-    
-    colorBtn.Text = "🎨 Цвет: " .. currentScheme.name
-    
-    showNotification("Цветовая схема", "Изменено на: " .. currentScheme.name, 3, "success")
-end)
-
--- Test notifications
-testBtn.MouseButton1Click:Connect(function()
-    TweenService:Create(testBtn, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-        Size = UDim2.new(0.98, 0, 0, 53)
-    }):Play()
-    
-    wait(0.1)
-    
-    TweenService:Create(testBtn, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-        Size = UDim2.new(1, 0, 0, 55)
-    }):Play()
-    
-    showNotification("Информация", "Обычное уведомление", 3, "info")
-    wait(0.5)
-    showNotification("Успех", "Операция выполнена успешно! ✅", 3, "success")
-    wait(0.5)
-    showNotification("Предупреждение", "Внимание: тестовое сообщение", 3, "warning")
-end)
-
--- INFO button function
-infoBtn.MouseButton1Click:Connect(function()
-    TweenService:Create(infoBtn, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-        Size = UDim2.new(0.98, 0, 0, 53)
-    }):Play()
-    
-    wait(0.1)
-    
-    TweenService:Create(infoBtn, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-        Size = UDim2.new(1, 0, 0, 55)
-    }):Play()
-    
-    showNotification("Информация", "by sk3d\nTelegram Channel: t.me/SK3DHUB", 5, "info")
-end)
-
--- Unload animation function
-local function unloadMenu()
-    showNotification("Выгрузка", "Интерфейс выгружается...", 2, "info")
+-- Close button function
+closeBtn.MouseButton1Click:Connect(function()
+    showNotification("Закрытие", "Интерфейс закрывается...", 1, "warning")
+    wait(1)
     
     local scaleTween = TweenService:Create(
         mainFrame,
         TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.In),
-        {Size = UDim2.new(0, 0, 0, 550)}
+        {Size = UDim2.new(0, 0, 0, 300)}
     )
     
     local fadeTween = TweenService:Create(
@@ -563,67 +346,6 @@ local function unloadMenu()
     
     scaleTween.Completed:Wait()
     gui:Destroy()
-end
-
--- Unload test button
-unloadTestBtn.MouseButton1Click:Connect(function()
-    TweenService:Create(unloadTestBtn, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-        Size = UDim2.new(0.98, 0, 0, 53)
-    }):Play()
-    
-    wait(0.1)
-    
-    TweenService:Create(unloadTestBtn, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-        Size = UDim2.new(1, 0, 0, 55)
-    }):Play()
-    
-    wait(0.3)
-    unloadMenu()
-end)
-
--- Close button (full destroy)
-closeBtn.MouseButton1Click:Connect(function()
-    showNotification("Закрытие", "Интерфейс закрывается...", 1, "warning")
-    wait(1)
-    unloadMenu()
-end)
-
--- Unload button (minimize)
-local isMinimized = false
-unloadBtn.MouseButton1Click:Connect(function()
-    if not isMinimized then
-        showNotification("Свертывание", "Интерфейс свернут", 2, "info")
-        
-        local minimizeTween = TweenService:Create(
-            mainFrame,
-            TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-            {Size = UDim2.new(0, 100, 0, 40), Position = UDim2.new(1, -120, 1, -50)}
-        )
-        
-        local fadeTween = TweenService:Create(
-            mainFrame,
-            TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-            {BackgroundTransparency = 0.7}
-        )
-        
-        minimizeTween:Play()
-        fadeTween:Play()
-        
-        unloadBtn.Image = "rbxassetid://3926307956"
-        isMinimized = true
-    else
-        local restoreTween = TweenService:Create(
-            mainFrame,
-            TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
-            {Size = UDim2.new(0, 440, 0, 550), Position = UDim2.new(0.5, -220, 0.5, -275), BackgroundTransparency = 0}
-        )
-        
-        restoreTween:Play()
-        unloadBtn.Image = "rbxassetid://3926307967"
-        isMinimized = false
-        
-        showNotification("Восстановление", "Интерфейс восстановлен", 2, "success")
-    end
 end)
 
 -- Dragging functionality
@@ -664,7 +386,7 @@ UserInputService.InputChanged:Connect(function(input)
 end)
 
 -- Initial animation
-mainFrame.Size = UDim2.new(0, 0, 0, 550)
+mainFrame.Size = UDim2.new(0, 0, 0, 300)
 mainFrame.BackgroundTransparency = 1
 shadow.ImageTransparency = 1
 backgroundFrame.BackgroundTransparency = 1
@@ -679,7 +401,7 @@ wait(0.2)
 local initSize = TweenService:Create(
     mainFrame,
     TweenInfo.new(0.7, Enum.EasingStyle.Back, Enum.EasingDirection.Out, 0, false, 0),
-    {Size = UDim2.new(0, 440, 0, 550)}
+    {Size = UDim2.new(0, 440, 0, 300)}
 )
 
 local initFade = TweenService:Create(
@@ -706,17 +428,51 @@ showNotification("SK3D UI", "Библиотека активирована! 🚀
 -- Export as library
 local SK3DLibrary = {
     ShowNotification = showNotification,
-    Unload = unloadMenu,
-    ChangeColor = function(schemeName)
-        for i, scheme in ipairs(colorSchemes) do
-            if scheme.name == schemeName then
-                currentSchemeIndex = i
-                currentScheme = scheme
-                colors = currentScheme
-                -- Update colors here
-                break
-            end
-        end
+    AddButton = function(name, callback)
+        local buttonCount = #content:GetChildren() - 1
+        local button = Instance.new("TextButton")
+        button.Size = UDim2.new(1, 0, 0, 50)
+        button.Position = UDim2.new(0, 0, 0, buttonCount * 60)
+        button.BackgroundColor3 = colors.primary
+        button.Text = name
+        button.TextColor3 = Color3.fromRGB(255, 255, 255)
+        button.Font = Enum.Font.GothamSemibold
+        button.TextSize = 14
+        button.ZIndex = 3
+        button.Parent = content
+        
+        local btnCorner = Instance.new("UICorner")
+        btnCorner.CornerRadius = UDim.new(0, 10)
+        btnCorner.Parent = button
+        
+        -- Adjust content size
+        content.Size = UDim2.new(1, -40, 0, (buttonCount + 1) * 60 + 10)
+        mainFrame.Size = UDim2.new(0, 440, 0, 160 + (buttonCount + 1) * 60)
+        
+        -- Hover effect
+        button.MouseEnter:Connect(function()
+            TweenService:Create(button, TweenInfo.new(0.2), {
+                BackgroundColor3 = Color3.fromRGB(
+                    math.min(colors.primary.R * 255 - 20, 255)/255,
+                    math.min(colors.primary.G * 255 - 20, 255)/255,
+                    math.min(colors.primary.B * 255 - 20, 255)/255
+                )
+            }):Play()
+        end)
+        
+        button.MouseLeave:Connect(function()
+            TweenService:Create(button, TweenInfo.new(0.2), {
+                BackgroundColor3 = colors.primary
+            }):Play()
+        end)
+        
+        button.MouseButton1Click:Connect(callback)
+        
+        return button
+    end,
+    
+    Unload = function()
+        gui:Destroy()
     end
 }
 
