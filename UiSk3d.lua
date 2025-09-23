@@ -1,49 +1,59 @@
--- SK3D UI Library v1.1 (Fixed)
+-- SK3D UI Library v1.2 (Fixed)
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
 
 local player = Players.LocalPlayer
+local guiParent = player:WaitForChild("PlayerGui")
 
 local SK3D = {}
 SK3D.__index = SK3D
 
-function SK3D:CreateWindow()
-    local newWindow = {}
-    setmetatable(newWindow, SK3D)
-    
-    newWindow.gui = Instance.new("ScreenGui")
-    newWindow.gui.Name = "SK3DUI"
-    newWindow.gui.Parent = player:WaitForChild("PlayerGui")
+function SK3D.new()
+    local self = setmetatable({}, SK3D)
+    return self
+end
 
-    newWindow.colors = {
+function SK3D:CreateWindow()
+    if self.gui and self.gui.Parent then
+        self.gui:Destroy()
+    end
+    
+    self.gui = Instance.new("ScreenGui")
+    self.gui.Name = "SK3DUI_" .. tick()
+    self.gui.ResetOnSpawn = false
+    self.gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    self.gui.Parent = guiParent
+
+    self.colors = {
         primary = Color3.fromRGB(70, 130, 230),
         background = Color3.fromRGB(250, 252, 255),
         text = Color3.fromRGB(30, 35, 45)
     }
 
-    newWindow.mainFrame = Instance.new("Frame")
-    newWindow.mainFrame.Size = UDim2.new(0, 400, 0, 400)
-    newWindow.mainFrame.Position = UDim2.new(0.5, -200, 0.5, -200)
-    newWindow.mainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-    newWindow.mainFrame.BackgroundColor3 = newWindow.colors.background
-    newWindow.mainFrame.BorderSizePixel = 0
-    newWindow.mainFrame.ClipsDescendants = true
-    newWindow.mainFrame.Parent = newWindow.gui
+    self.mainFrame = Instance.new("Frame")
+    self.mainFrame.Size = UDim2.new(0, 400, 0, 400)
+    self.mainFrame.Position = UDim2.new(0.5, -200, 0.5, -200)
+    self.mainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+    self.mainFrame.BackgroundColor3 = self.colors.background
+    self.mainFrame.BorderSizePixel = 0
+    self.mainFrame.ClipsDescendants = true
+    self.mainFrame.Parent = self.gui
 
     local corner = Instance.new("UICorner")
     corner.CornerRadius = UDim.new(0, 15)
-    corner.Parent = newWindow.mainFrame
+    corner.Parent = self.mainFrame
 
-    newWindow.header = Instance.new("Frame")
-    newWindow.header.Size = UDim2.new(1, 0, 0, 80)
-    newWindow.header.BackgroundColor3 = newWindow.colors.primary
-    newWindow.header.BorderSizePixel = 0
-    newWindow.header.Parent = newWindow.mainFrame
+    self.header = Instance.new("Frame")
+    self.header.Size = UDim2.new(1, 0, 0, 80)
+    self.header.BackgroundColor3 = self.colors.primary
+    self.header.BorderSizePixel = 0
+    self.header.Parent = self.mainFrame
 
     local headerCorner = Instance.new("UICorner")
     headerCorner.CornerRadius = UDim.new(0, 15)
-    headerCorner.Parent = newWindow.header
+    headerCorner.Parent = self.header
 
     local title = Instance.new("TextLabel")
     title.Size = UDim2.new(1, -40, 1, 0)
@@ -54,7 +64,7 @@ function SK3D:CreateWindow()
     title.Font = Enum.Font.GothamBold
     title.TextSize = 24
     title.TextXAlignment = Enum.TextXAlignment.Left
-    title.Parent = newWindow.header
+    title.Parent = self.header
 
     local closeBtn = Instance.new("TextButton")
     closeBtn.Size = UDim2.new(0, 30, 0, 30)
@@ -62,67 +72,74 @@ function SK3D:CreateWindow()
     closeBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     closeBtn.BackgroundTransparency = 0.9
     closeBtn.Text = "X"
-    closeBtn.TextColor3 = newWindow.colors.text
+    closeBtn.TextColor3 = self.colors.text
     closeBtn.Font = Enum.Font.GothamBold
     closeBtn.TextSize = 14
-    closeBtn.Parent = newWindow.header
+    closeBtn.Parent = self.header
 
     local closeCorner = Instance.new("UICorner")
     closeCorner.CornerRadius = UDim.new(1, 0)
     closeCorner.Parent = closeBtn
 
-    newWindow.content = Instance.new("Frame")
-    newWindow.content.Size = UDim2.new(1, -20, 1, -100)
-    newWindow.content.Position = UDim2.new(0, 10, 0, 90)
-    newWindow.content.BackgroundTransparency = 1
-    newWindow.content.Parent = newWindow.mainFrame
+    self.content = Instance.new("Frame")
+    self.content.Size = UDim2.new(1, -20, 1, -100)
+    self.content.Position = UDim2.new(0, 10, 0, 90)
+    self.content.BackgroundTransparency = 1
+    self.content.Parent = self.mainFrame
 
-    newWindow.buttons = {}
-    newWindow.buttonCount = 0
+    local uiListLayout = Instance.new("UIListLayout")
+    uiListLayout.Padding = UDim.new(0, 10)
+    uiListLayout.Parent = self.content
 
-    newWindow.mainFrame.Size = UDim2.new(0, 0, 0, 400)
-    local initTween = TweenService:Create(newWindow.mainFrame, TweenInfo.new(0.5), {
+    self.buttons = {}
+    self.buttonCount = 0
+
+    self.mainFrame.Size = UDim2.new(0, 0, 0, 400)
+    local initTween = TweenService:Create(self.mainFrame, TweenInfo.new(0.5), {
         Size = UDim2.new(0, 400, 0, 400)
     })
     initTween:Play()
 
     closeBtn.MouseButton1Click:Connect(function()
-        local closeTween = TweenService:Create(newWindow.mainFrame, TweenInfo.new(0.3), {
+        local closeTween = TweenService:Create(self.mainFrame, TweenInfo.new(0.3), {
             Size = UDim2.new(0, 0, 0, 400)
         })
         closeTween:Play()
         closeTween.Completed:Wait()
-        newWindow.gui:Destroy()
+        self.gui:Destroy()
     end)
 
     local dragging = false
     local dragStart, startPos
 
-    newWindow.header.InputBegan:Connect(function(input)
+    local function onInputBegan(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             dragging = true
             dragStart = input.Position
-            startPos = newWindow.mainFrame.Position
+            startPos = self.mainFrame.Position
         end
-    end)
+    end
 
-    newWindow.header.InputEnded:Connect(function(input)
+    local function onInputEnded(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             dragging = false
         end
-    end)
+    end
+
+    self.header.InputBegan:Connect(onInputBegan)
+    self.header.InputEnded:Connect(onInputEnded)
 
     UserInputService.InputChanged:Connect(function(input)
         if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
             local delta = input.Position - dragStart
-            newWindow.mainFrame.Position = UDim2.new(
+            self.mainFrame.Position = UDim2.new(
                 startPos.X.Scale, startPos.X.Offset + delta.X,
                 startPos.Y.Scale, startPos.Y.Offset + delta.Y
             )
         end
     end)
 
-    return newWindow
+    return self
 end
 
 function SK3D:AddButton(name, callback)
@@ -130,7 +147,6 @@ function SK3D:AddButton(name, callback)
     
     local button = Instance.new("TextButton")
     button.Size = UDim2.new(1, 0, 0, 45)
-    button.Position = UDim2.new(0, 0, 0, (self.buttonCount - 1) * 55)
     button.BackgroundColor3 = self.colors.primary
     button.Text = name
     button.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -205,6 +221,12 @@ function SK3D:Notify(text, duration)
     slideOut:Play()
     slideOut.Completed:Wait()
     notification:Destroy()
+end
+
+function SK3D:Destroy()
+    if self.gui then
+        self.gui:Destroy()
+    end
 end
 
 return SK3D
