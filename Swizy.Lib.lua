@@ -395,7 +395,9 @@ function Library:CreateWindow(Config)
         task.delay(0.5, function()
             IntroContainer:Destroy()
             IntroOverlay:Destroy()
-            MainFrame.Visible = true
+            if MainFrame then
+    MainFrame.Visible = true
+end
         end)
     end)
 
@@ -509,7 +511,7 @@ function Library:CreateWindow(Config)
     function Window:AddTab(Name)
         local TabFrame = Create("TextButton", {
             Parent = TabHolder,
-            BackgroundColor3 = self.Themes[Config.Theme].Third,
+            BackgroundColor3 = self.Themes[self.CurrentTheme].Third,
             Size = UDim2.new(1, -16, 0, 38),
             Text = "",
             AutoButtonColor = false
@@ -956,3 +958,4 @@ function Library:Destroy()
 end
 
 return Library
+
