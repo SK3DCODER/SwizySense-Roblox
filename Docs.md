@@ -1,5 +1,4 @@
 # UI Libraries Documentation
-
 # Swizy.Lib Documentation
 
 This documentation is for the Swizy.Lib UI Library.
@@ -11,7 +10,6 @@ This documentation is for the Swizy.Lib UI Library.
 ```lua
 local Library = loadstring(game:HttpGet(('https://raw.githubusercontent.com/SK3DCODER/SwizySense-Roblox/refs/heads/main/Swizy.Lib.lua')))()
 ```
-
 ```
 
 ## Creating a Window
@@ -21,7 +19,6 @@ local Library = loadstring(game:HttpGet(('https://raw.githubusercontent.com/SK3D
 ```lua
 local Window = Library:CreateWindow({
 ```
-
     Name = "Swizy.Lib",
 
     Size = UDim2.new(0, 650, 0, 450),
@@ -33,7 +30,6 @@ local Window = Library:CreateWindow({
 ```lua
 --[[
 ```
-
 Name = <string> - Window title.
 
 Size = <UDim2> - Window size (width, height).
@@ -43,7 +39,6 @@ Theme = <string> - Theme (only "Dark" for now).
 ```lua
 ]]
 ```
-
 ```
 
 ## Creating a Tab
@@ -57,17 +52,12 @@ local Tab = Window:AddTab("Main")
 ```lua
 --[[
 ```
-
 Name = <string> - Tab name.
 
 ```lua
 ]]
-### Creating a Section
-
 ```
-
-lua
-
+### Creating a Section
 ```lua
 local Section = Tab:AddSection("Controls")
 ```
@@ -75,21 +65,15 @@ local Section = Tab:AddSection("Controls")
 ```lua
 --[[
 ```
-
 Name = <string> - Section name.
 
 ```lua
 ]]
-### Notifications
-
 ```
-
-lua
-
+### Notifications
 ```lua
 Library:MakeNotification({
 ```
-
     Name = "Title",
 
     Content = "Notification text",
@@ -101,7 +85,6 @@ Library:MakeNotification({
 ```lua
 --[[
 ```
-
 Name = <string> - Notification title.
 
 Content = <string> - Notification text.
@@ -110,16 +93,11 @@ Time = <number> - Duration in seconds.
 
 ```lua
 ]]
-### Prompt Dialog
-
 ```
-
-lua
-
+### Prompt Dialog
 ```lua
 Library:MakePrompt({
 ```
-
     Title = "Confirmation",
 
     Text = "Are you sure?",
@@ -132,13 +110,11 @@ Library:MakePrompt({
         print("Selected: " .. result)
     end
 ```
-
 })
 
 ```lua
 --[[
 ```
-
 Title = <string> - Prompt title.
 
 Text = <string> - Question text.
@@ -149,23 +125,17 @@ Callback = <function> - Function when button clicked.
 
 ```lua
 ]]
-### Button
-
 ```
-
-lua
-
+### Button
 ```lua
 local Button = Section:AddButton("Click Me", function()
     print("Button clicked!")
 ```
-
 end)
 
 ```lua
 --[[
 ```
-
 First argument: <string> - Button text.
 
 Second argument: <function> - Click callback.
@@ -177,23 +147,17 @@ Second argument: <function> - Click callback.
 ```lua
 -- Change button text
 Button:Set("New Text")
-### Toggle
-
 ```
-
-lua
-
+### Toggle
 ```lua
 local Toggle = Section:AddToggle("Enable", false, function(state)
     print("State:", state)
 ```
-
 end)
 
 ```lua
 --[[
 ```
-
 First argument: <string> - Toggle text.
 
 Second argument: <bool> - Default state (true/false).
@@ -208,23 +172,17 @@ Third argument: <function> - State change callback.
 -- Change state
 Toggle:Set(true)  -- enable
 Toggle:Set(false) -- disable
-### Slider
-
 ```
-
-lua
-
+### Slider
 ```lua
 local Slider = Section:AddSlider("Speed", 0, 100, 50, function(value)
     print("Value:", value)
 ```
-
 end)
 
 ```lua
 --[[
 ```
-
 First argument: <string> - Slider text.
 
 Second argument: <number> - Minimum value.
@@ -242,18 +200,13 @@ Fifth argument: <function> - Value change callback.
 ```lua
 -- Set value
 Slider:Set(75)
+```
 ### Dropdown
-
-```
-
-lua
-
 ```lua
-local Dropdown = Section:AddDropdown("Select", 
-    {"Option 1", "Option 2", "Option 3"}, 
+local Dropdown = Section:AddDropdown("Select",
+    {"Option 1", "Option 2", "Option 3"},
 ```
-
-    "Option 1", 
+    "Option 1",
 
     function(option)
 
@@ -261,13 +214,11 @@ local Dropdown = Section:AddDropdown("Select",
         print("Selected:", option)
     end
 ```
-
 )
 
 ```lua
 --[[
 ```
-
 First argument: <string> - Dropdown text.
 
 Second argument: <table> - Options list.
@@ -283,12 +234,8 @@ Fourth argument: <function> - Selection callback.
 ```lua
 -- Select option programmatically
 Dropdown:Set("Option 2")
-### Menu Controls
-
 ```
-
-lua
-
+### Menu Controls
 ```lua
 -- Toggle visibility
 Library:ToggleMenu()              -- toggle
@@ -304,10 +251,8 @@ Library:Unload()
 ```lua
 -- Alternative unload method
 Library:Destroy()
-### Hotkeys
-
 ```
-
+### Hotkeys
 RightShift - Open/close menu
 
 U (top bar button) - Unload library
@@ -327,7 +272,6 @@ local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/SK3DC
 ```lua
 local Window = Library:CreateWindow({
 ```
-
     Name = "My Script",
 
     Size = UDim2.new(0, 600, 0, 400)
@@ -343,7 +287,6 @@ local Section = MainTab:AddSection("Features")
 Section:AddButton("Test", function()
     Library:MakeNotification({
 ```
-
         Name = "Test",
 
         Content = "Working!",
@@ -358,14 +301,12 @@ end)
 local Toggle = Section:AddToggle("Enable", false, function(state)
     print("State:", state)
 ```
-
 end)
 
 ```lua
 Section:AddSlider("Value", 0, 100, 50, function(value)
     print("Value:", value)
 ```
-
 end)
 
 ```
