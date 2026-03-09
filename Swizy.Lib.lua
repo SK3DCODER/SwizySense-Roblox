@@ -28,7 +28,10 @@ local Library = {
     },
     CurrentTheme = "Dark",
     ToggleKey = Enum.KeyCode.RightShift,
-    MenuVisible = true
+    MenuVisible = true,
+    MainFrame = nil,
+    OriginalSize = nil,
+    NotificationHolder = nil
 }
 
 local SwizyGui = Instance.new("ScreenGui")
@@ -109,9 +112,8 @@ function Library:MakeNotification(Config)
     Config.Content = Config.Content or "Message"
     Config.Time = Config.Time or 5
 
-    local NotificationHolder = self.NotificationHolder
-    if not NotificationHolder then
-        NotificationHolder = Create("Frame", {
+    if not self.NotificationHolder then
+        self.NotificationHolder = Create("Frame", {
             Parent = SwizyGui,
             BackgroundTransparency = 1,
             Position = UDim2.new(1, -320, 1, -20),
@@ -119,18 +121,16 @@ function Library:MakeNotification(Config)
             AnchorPoint = Vector2.new(1, 1)
         })
         
-        local ListLayout = Create("UIListLayout", {
-            Parent = NotificationHolder,
+        Create("UIListLayout", {
+            Parent = self.NotificationHolder,
             Padding = UDim.new(0, 8),
             VerticalAlignment = Enum.VerticalAlignment.Bottom,
             SortOrder = Enum.SortOrder.LayoutOrder
         })
-        
-        self.NotificationHolder = NotificationHolder
     end
 
     local Notification = Create("Frame", {
-        Parent = NotificationHolder,
+        Parent = self.NotificationHolder,
         BackgroundColor3 = self.Themes[self.CurrentTheme].Second,
         Size = UDim2.new(1, 0, 0, 0),
         Position = UDim2.new(1, 20, 0, 0),
@@ -140,7 +140,7 @@ function Library:MakeNotification(Config)
     CreateCorner(6).Parent = Notification
     CreateStroke(self.Themes[self.CurrentTheme].Stroke, 1).Parent = Notification
 
-    local Padding = Create("UIPadding", {
+    Create("UIPadding", {
         Parent = Notification,
         PaddingLeft = UDim.new(0, 12),
         PaddingRight = UDim.new(0, 12),
@@ -181,7 +181,6 @@ function Library:MakeNotification(Config)
     Notification.Size = UDim2.new(1, 0, 0, Title.TextBounds.Y + Content.TextBounds.Y + 40)
 
     TweenService:Create(Notification, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Position = UDim2.new(0, 0, 0, 0)}):Play()
-
     TweenService:Create(ProgressBar, TweenInfo.new(Config.Time, Enum.EasingStyle.Linear), {Size = UDim2.new(0, 0, 0, 2)}):Play()
 
     task.delay(Config.Time - 0.3, function()
@@ -189,9 +188,7 @@ function Library:MakeNotification(Config)
         TweenService:Create(Title, TweenInfo.new(0.3), {TextTransparency = 1}):Play()
         TweenService:Create(Content, TweenInfo.new(0.3), {TextTransparency = 1}):Play()
         TweenService:Create(ProgressBar, TweenInfo.new(0.3), {BackgroundTransparency = 1}):Play()
-        task.delay(0.4, function()
-            Notification:Destroy()
-        end)
+        task.delay(0.4, Notification.Destroy, Notification)
     end)
 end
 
@@ -214,7 +211,7 @@ function Library:MakePrompt(Config)
     local Prompt = Create("Frame", {
         Parent = Overlay,
         BackgroundColor3 = self.Themes[self.CurrentTheme].Second,
-        Size = UDim2.new(0, 300, 0, 150),
+        Size = UDim2.new(0, 300, 0, 0),
         Position = UDim2.new(0.5, -150, 0.5, -75),
         ZIndex = 1001,
         ClipsDescendants = true
@@ -282,13 +279,10 @@ function Library:MakePrompt(Config)
             Config.Callback(ButtonText)
             TweenService:Create(Overlay, TweenInfo.new(0.3), {BackgroundTransparency = 1}):Play()
             TweenService:Create(Prompt, TweenInfo.new(0.3), {Size = UDim2.new(0, 0, 0, 0), BackgroundTransparency = 1}):Play()
-            task.delay(0.3, function()
-                Overlay:Destroy()
-            end)
+            task.delay(0.3, Overlay.Destroy, Overlay)
         end)
     end
 
-    Prompt.Size = UDim2.new(0, 300, 0, 0)
     TweenService:Create(Prompt, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Size = UDim2.new(0, 300, 0, 150)}):Play()
 end
 
@@ -313,13 +307,15 @@ function Library:ToggleMenu(State)
                 BackgroundTransparency = 1
             }):Play()
             task.delay(0.3, function()
-                self.MainFrame.Visible = false
+                if self.MainFrame then
+                    self.MainFrame.Visible = false
+                end
             end)
         end
     end
 end
 
--- Горячая клавиша для открытия/закрытия
+-- Горячая клавиша
 AddConnection(UserInputService.InputBegan, function(Input)
     if Input.KeyCode == Library.ToggleKey and not UserInputService:GetFocusedTextBox() then
         Library:ToggleMenu()
@@ -330,7 +326,6 @@ function Library:CreateWindow(Config)
     Config = Config or {}
     Config.Name = Config.Name or "Swizy.Lib"
     Config.Size = Config.Size or UDim2.new(0, 650, 0, 450)
-    Config.Theme = Config.Theme or "Dark"
 
     local Window = {}
     local FirstTab = true
@@ -360,7 +355,7 @@ function Library:CreateWindow(Config)
         Image = "rbxassetid://6031094678",
         Size = UDim2.new(0, 70, 0, 70),
         Position = UDim2.new(0.5, -35, 0, 0),
-        ImageColor3 = self.Themes[Config.Theme].Accent,
+        ImageColor3 = self.Themes[self.CurrentTheme].Accent,
         ImageTransparency = 0,
         ZIndex = 1000
     })
@@ -369,7 +364,7 @@ function Library:CreateWindow(Config)
         Parent = IntroContainer,
         BackgroundTransparency = 1,
         Text = "Swizy.Lib",
-        TextColor3 = self.Themes[Config.Theme].Text,
+        TextColor3 = self.Themes[self.CurrentTheme].Text,
         TextSize = 28,
         Font = Enum.Font.GothamBlack,
         Size = UDim2.new(1, 0, 0, 40),
@@ -388,47 +383,34 @@ function Library:CreateWindow(Config)
         Position = UDim2.new(0, 0, 0, 80)
     }):Play()
 
-    task.delay(2, function()
-        TweenService:Create(IntroIcon, TweenInfo.new(0.4), {ImageTransparency = 1, Size = UDim2.new(0, 90, 0, 90)}):Play()
-        TweenService:Create(IntroText, TweenInfo.new(0.4), {TextTransparency = 1}):Play()
-        TweenService:Create(IntroOverlay, TweenInfo.new(0.4), {BackgroundTransparency = 1}):Play()
-        task.delay(0.5, function()
-            IntroContainer:Destroy()
-            IntroOverlay:Destroy()
-            if MainFrame then
-    MainFrame.Visible = true
-end
-        end)
-    end)
-
-    -- Главное окно
+    -- Главное окно (создаем сразу, но скрытое)
     local MainFrame = Create("Frame", {
         Parent = SwizyGui,
-        BackgroundColor3 = self.Themes[Config.Theme].Main,
+        BackgroundColor3 = self.Themes[self.CurrentTheme].Main,
         Size = Config.Size,
         Position = UDim2.new(0.5, -Config.Size.X.Offset/2, 0.5, -Config.Size.Y.Offset/2),
         ClipsDescendants = true,
         Visible = false
     })
     CreateCorner(10).Parent = MainFrame
-    CreateStroke(self.Themes[Config.Theme].Stroke, 1).Parent = MainFrame
+    CreateStroke(self.Themes[self.CurrentTheme].Stroke, 1).Parent = MainFrame
 
     self.MainFrame = MainFrame
 
     -- Top Bar
     local TopBar = Create("Frame", {
         Parent = MainFrame,
-        BackgroundColor3 = self.Themes[Config.Theme].Second,
+        BackgroundColor3 = self.Themes[self.CurrentTheme].Second,
         Size = UDim2.new(1, 0, 0, 45)
     })
     CreateCorner(10).Parent = TopBar
-    CreateStroke(self.Themes[Config.Theme].Stroke, 1).Parent = TopBar
+    CreateStroke(self.Themes[self.CurrentTheme].Stroke, 1).Parent = TopBar
 
     local Title = Create("TextLabel", {
         Parent = TopBar,
         BackgroundTransparency = 1,
         Text = Config.Name,
-        TextColor3 = self.Themes[Config.Theme].Accent,
+        TextColor3 = self.Themes[self.CurrentTheme].Accent,
         TextSize = 20,
         Font = Enum.Font.GothamBlack,
         Position = UDim2.new(0, 15, 0, 0),
@@ -442,7 +424,7 @@ end
         Size = UDim2.new(0, 30, 0, 30),
         Position = UDim2.new(1, -40, 0.5, -15),
         Text = "X",
-        TextColor3 = self.Themes[Config.Theme].Text,
+        TextColor3 = self.Themes[self.CurrentTheme].Text,
         TextSize = 18,
         Font = Enum.Font.GothamBold,
         AutoButtonColor = false
@@ -455,14 +437,14 @@ end
     -- Tab Holder
     local TabHolder = Create("ScrollingFrame", {
         Parent = MainFrame,
-        BackgroundColor3 = self.Themes[Config.Theme].Second,
+        BackgroundColor3 = self.Themes[self.CurrentTheme].Second,
         Size = UDim2.new(0, 160, 1, -60),
         Position = UDim2.new(0, 0, 0, 50),
         ScrollBarThickness = 3,
         BorderSizePixel = 0,
         CanvasSize = UDim2.new(0, 0, 5, 0)
     })
-    CreateStroke(self.Themes[Config.Theme].Stroke, 1).Parent = TabHolder
+    CreateStroke(self.Themes[self.CurrentTheme].Stroke, 1).Parent = TabHolder
 
     local TabLayout = Create("UIListLayout", {
         Parent = TabHolder,
@@ -470,7 +452,7 @@ end
         SortOrder = Enum.SortOrder.LayoutOrder
     })
 
-    local Padding = Create("UIPadding", {
+    Create("UIPadding", {
         Parent = TabHolder,
         PaddingLeft = UDim.new(0, 8),
         PaddingRight = UDim.new(0, 8),
@@ -480,7 +462,7 @@ end
     -- Container
     local Container = Create("ScrollingFrame", {
         Parent = MainFrame,
-        BackgroundColor3 = self.Themes[Config.Theme].Main,
+        BackgroundColor3 = self.Themes[self.CurrentTheme].Main,
         Size = UDim2.new(1, -180, 1, -60),
         Position = UDim2.new(0, 170, 0, 50),
         ScrollBarThickness = 4,
@@ -494,7 +476,7 @@ end
         SortOrder = Enum.SortOrder.LayoutOrder
     })
 
-    local ContainerPadding = Create("UIPadding", {
+    Create("UIPadding", {
         Parent = Container,
         PaddingLeft = UDim.new(0, 12),
         PaddingRight = UDim.new(0, 12),
@@ -508,6 +490,18 @@ end
 
     MakeDraggable(TopBar, MainFrame)
 
+    -- Завершение интро и показ меню
+    task.delay(2, function()
+        TweenService:Create(IntroIcon, TweenInfo.new(0.4), {ImageTransparency = 1, Size = UDim2.new(0, 90, 0, 90)}):Play()
+        TweenService:Create(IntroText, TweenInfo.new(0.4), {TextTransparency = 1}):Play()
+        TweenService:Create(IntroOverlay, TweenInfo.new(0.4), {BackgroundTransparency = 1}):Play()
+        task.delay(0.5, function()
+            if IntroContainer then IntroContainer:Destroy() end
+            if IntroOverlay then IntroOverlay:Destroy() end
+            if MainFrame then MainFrame.Visible = true end
+        end)
+    end)
+
     function Window:AddTab(Name)
         local TabFrame = Create("TextButton", {
             Parent = TabHolder,
@@ -517,13 +511,13 @@ end
             AutoButtonColor = false
         })
         CreateCorner(8).Parent = TabFrame
-        CreateStroke(self.Themes[Config.Theme].Stroke, 1).Parent = TabFrame
+        CreateStroke(self.Themes[self.CurrentTheme].Stroke, 1).Parent = TabFrame
 
         local TabTitle = Create("TextLabel", {
             Parent = TabFrame,
             BackgroundTransparency = 1,
             Text = Name,
-            TextColor3 = self.Themes[Config.Theme].Text,
+            TextColor3 = self.Themes[self.CurrentTheme].Text,
             TextSize = 15,
             Font = Enum.Font.GothamSemibold,
             Size = UDim2.new(1, -10, 1, 0),
@@ -551,7 +545,7 @@ end
         end)
 
         if FirstTab then
-            TabFrame.BackgroundColor3 = self.Themes[Config.Theme].Accent
+            TabFrame.BackgroundColor3 = self.Themes[self.CurrentTheme].Accent
             TabContainer.Visible = true
             FirstTab = false
         end
@@ -559,7 +553,7 @@ end
         AddConnection(TabFrame.MouseButton1Click, function()
             for _, v in pairs(TabHolder:GetChildren()) do
                 if v:IsA("TextButton") then
-                    TweenService:Create(v, TweenInfo.new(0.2), {BackgroundColor3 = self.Themes[Config.Theme].Third}):Play()
+                    TweenService:Create(v, TweenInfo.new(0.2), {BackgroundColor3 = self.Themes[self.CurrentTheme].Third}):Play()
                 end
             end
             for _, v in pairs(Container:GetChildren()) do
@@ -567,7 +561,7 @@ end
                     v.Visible = false
                 end
             end
-            TweenService:Create(TabFrame, TweenInfo.new(0.2), {BackgroundColor3 = self.Themes[Config.Theme].Accent}):Play()
+            TweenService:Create(TabFrame, TweenInfo.new(0.2), {BackgroundColor3 = self.Themes[self.CurrentTheme].Accent}):Play()
             TabContainer.Visible = true
         end)
 
@@ -576,17 +570,17 @@ end
         function Tab:AddSection(Name)
             local SectionFrame = Create("Frame", {
                 Parent = TabContainer,
-                BackgroundColor3 = self.Themes[Config.Theme].Second,
+                BackgroundColor3 = self.Themes[self.CurrentTheme].Second,
                 Size = UDim2.new(1, 0, 0, 35)
             })
             CreateCorner(8).Parent = SectionFrame
-            CreateStroke(self.Themes[Config.Theme].Stroke, 1).Parent = SectionFrame
+            CreateStroke(self.Themes[self.CurrentTheme].Stroke, 1).Parent = SectionFrame
 
             local SectionTitle = Create("TextLabel", {
                 Parent = SectionFrame,
                 BackgroundTransparency = 1,
                 Text = Name,
-                TextColor3 = self.Themes[Config.Theme].Accent,
+                TextColor3 = self.Themes[self.CurrentTheme].Accent,
                 TextSize = 16,
                 Font = Enum.Font.GothamBold,
                 Position = UDim2.new(0, 12, 0, 0),
@@ -619,19 +613,19 @@ end
 
                 local Button = Create("TextButton", {
                     Parent = SectionContainer,
-                    BackgroundColor3 = self.Themes[Config.Theme].Third,
+                    BackgroundColor3 = self.Themes[self.CurrentTheme].Third,
                     Size = UDim2.new(1, 0, 0, 35),
                     Text = "",
                     AutoButtonColor = false
                 })
                 CreateCorner(6).Parent = Button
-                CreateStroke(self.Themes[Config.Theme].Stroke, 1).Parent = Button
+                CreateStroke(self.Themes[self.CurrentTheme].Stroke, 1).Parent = Button
 
                 local ButtonText = Create("TextLabel", {
                     Parent = Button,
                     BackgroundTransparency = 1,
                     Text = Text,
-                    TextColor3 = self.Themes[Config.Theme].Text,
+                    TextColor3 = self.Themes[self.CurrentTheme].Text,
                     TextSize = 14,
                     Font = Enum.Font.Gotham,
                     Size = UDim2.new(1, -40, 1, 0),
@@ -645,15 +639,15 @@ end
                     Image = "rbxassetid://6031094678",
                     Size = UDim2.new(0, 18, 0, 18),
                     Position = UDim2.new(1, -30, 0.5, -9),
-                    ImageColor3 = self.Themes[Config.Theme].Accent
+                    ImageColor3 = self.Themes[self.CurrentTheme].Accent
                 })
 
                 AddConnection(Button.MouseEnter, function()
-                    TweenService:Create(Button, TweenInfo.new(0.2), {BackgroundColor3 = self.Themes[Config.Theme].Accent}):Play()
+                    TweenService:Create(Button, TweenInfo.new(0.2), {BackgroundColor3 = self.Themes[self.CurrentTheme].Accent}):Play()
                 end)
 
                 AddConnection(Button.MouseLeave, function()
-                    TweenService:Create(Button, TweenInfo.new(0.2), {BackgroundColor3 = self.Themes[Config.Theme].Third}):Play()
+                    TweenService:Create(Button, TweenInfo.new(0.2), {BackgroundColor3 = self.Themes[self.CurrentTheme].Third}):Play()
                 end)
 
                 AddConnection(Button.MouseButton1Click, Callback)
@@ -671,19 +665,19 @@ end
 
                 local Toggle = Create("TextButton", {
                     Parent = SectionContainer,
-                    BackgroundColor3 = self.Themes[Config.Theme].Third,
+                    BackgroundColor3 = self.Themes[self.CurrentTheme].Third,
                     Size = UDim2.new(1, 0, 0, 35),
                     Text = "",
                     AutoButtonColor = false
                 })
                 CreateCorner(6).Parent = Toggle
-                CreateStroke(self.Themes[Config.Theme].Stroke, 1).Parent = Toggle
+                CreateStroke(self.Themes[self.CurrentTheme].Stroke, 1).Parent = Toggle
 
                 local ToggleText = Create("TextLabel", {
                     Parent = Toggle,
                     BackgroundTransparency = 1,
                     Text = Text,
-                    TextColor3 = self.Themes[Config.Theme].Text,
+                    TextColor3 = self.Themes[self.CurrentTheme].Text,
                     TextSize = 14,
                     Font = Enum.Font.Gotham,
                     Size = UDim2.new(1, -60, 1, 0),
@@ -693,23 +687,23 @@ end
 
                 local ToggleBox = Create("Frame", {
                     Parent = Toggle,
-                    BackgroundColor3 = State and self.Themes[Config.Theme].Accent or self.Themes[Config.Theme].Main,
+                    BackgroundColor3 = State and self.Themes[self.CurrentTheme].Accent or self.Themes[self.CurrentTheme].Main,
                     Size = UDim2.new(0, 44, 0, 22),
                     Position = UDim2.new(1, -56, 0.5, -11)
                 })
                 CreateCorner(11).Parent = ToggleBox
-                CreateStroke(self.Themes[Config.Theme].Stroke, 0.5).Parent = ToggleBox
+                CreateStroke(self.Themes[self.CurrentTheme].Stroke, 0.5).Parent = ToggleBox
 
                 local ToggleCircle = Create("Frame", {
                     Parent = ToggleBox,
-                    BackgroundColor3 = self.Themes[Config.Theme].Text,
+                    BackgroundColor3 = self.Themes[self.CurrentTheme].Text,
                     Size = UDim2.new(0, 18, 0, 18),
                     Position = State and UDim2.new(1, -20, 0.5, -9) or UDim2.new(0, 2, 0.5, -9)
                 })
                 CreateCorner(9).Parent = ToggleCircle
 
                 local function UpdateVisual()
-                    TweenService:Create(ToggleBox, TweenInfo.new(0.2), {BackgroundColor3 = State and self.Themes[Config.Theme].Accent or self.Themes[Config.Theme].Main}):Play()
+                    TweenService:Create(ToggleBox, TweenInfo.new(0.2), {BackgroundColor3 = State and self.Themes[self.CurrentTheme].Accent or self.Themes[self.CurrentTheme].Main}):Play()
                     TweenService:Create(ToggleCircle, TweenInfo.new(0.2), {Position = State and UDim2.new(1, -20, 0.5, -9) or UDim2.new(0, 2, 0.5, -9)}):Play()
                 end
 
@@ -735,18 +729,18 @@ end
 
                 local Slider = Create("Frame", {
                     Parent = SectionContainer,
-                    BackgroundColor3 = self.Themes[Config.Theme].Third,
+                    BackgroundColor3 = self.Themes[self.CurrentTheme].Third,
                     Size = UDim2.new(1, 0, 0, 60),
                     ClipsDescendants = true
                 })
                 CreateCorner(6).Parent = Slider
-                CreateStroke(self.Themes[Config.Theme].Stroke, 1).Parent = Slider
+                CreateStroke(self.Themes[self.CurrentTheme].Stroke, 1).Parent = Slider
 
                 local SliderText = Create("TextLabel", {
                     Parent = Slider,
                     BackgroundTransparency = 1,
                     Text = Text,
-                    TextColor3 = self.Themes[Config.Theme].Text,
+                    TextColor3 = self.Themes[self.CurrentTheme].Text,
                     TextSize = 14,
                     Font = Enum.Font.Gotham,
                     Size = UDim2.new(1, -24, 0, 20),
@@ -758,7 +752,7 @@ end
                     Parent = Slider,
                     BackgroundTransparency = 1,
                     Text = tostring(Value),
-                    TextColor3 = self.Themes[Config.Theme].Accent,
+                    TextColor3 = self.Themes[self.CurrentTheme].Accent,
                     TextSize = 14,
                     Font = Enum.Font.GothamBold,
                     Size = UDim2.new(0, 50, 0, 20),
@@ -767,7 +761,7 @@ end
 
                 local SliderBar = Create("Frame", {
                     Parent = Slider,
-                    BackgroundColor3 = self.Themes[Config.Theme].Main,
+                    BackgroundColor3 = self.Themes[self.CurrentTheme].Main,
                     Size = UDim2.new(1, -24, 0, 12),
                     Position = UDim2.new(0, 12, 0, 35)
                 })
@@ -775,7 +769,7 @@ end
 
                 local FillBar = Create("Frame", {
                     Parent = SliderBar,
-                    BackgroundColor3 = self.Themes[Config.Theme].Accent,
+                    BackgroundColor3 = self.Themes[self.CurrentTheme].Accent,
                     Size = UDim2.new((Value - Min) / (Max - Min), 0, 1, 0)
                 })
                 CreateCorner(6).Parent = FillBar
@@ -821,18 +815,18 @@ end
 
                 local Dropdown = Create("Frame", {
                     Parent = SectionContainer,
-                    BackgroundColor3 = self.Themes[Config.Theme].Third,
-                    Size = UDim2.new(1, 0, 0, 35),
+                    BackgroundColor3 = self.Themes[self.CurrentTheme].Third,
+                    Size = UDim2.new(1, 0, 0, 45),
                     ClipsDescendants = true
                 })
                 CreateCorner(6).Parent = Dropdown
-                CreateStroke(self.Themes[Config.Theme].Stroke, 1).Parent = Dropdown
+                CreateStroke(self.Themes[self.CurrentTheme].Stroke, 1).Parent = Dropdown
 
                 local Title = Create("TextLabel", {
                     Parent = Dropdown,
                     BackgroundTransparency = 1,
                     Text = Text,
-                    TextColor3 = self.Themes[Config.Theme].Text,
+                    TextColor3 = self.Themes[self.CurrentTheme].Text,
                     TextSize = 14,
                     Font = Enum.Font.Gotham,
                     Size = UDim2.new(0.6, -12, 1, 0),
@@ -844,7 +838,7 @@ end
                     Parent = Dropdown,
                     BackgroundTransparency = 1,
                     Text = Selected,
-                    TextColor3 = self.Themes[Config.Theme].Accent,
+                    TextColor3 = self.Themes[self.CurrentTheme].Accent,
                     TextSize = 14,
                     Font = Enum.Font.GothamSemibold,
                     Size = UDim2.new(0.4, -30, 1, 0),
@@ -858,7 +852,8 @@ end
                     Image = "rbxassetid://6031094678",
                     Size = UDim2.new(0, 16, 0, 16),
                     Position = UDim2.new(1, -25, 0.5, -8),
-                    ImageColor3 = self.Themes[Config.Theme].TextDark
+                    ImageColor3 = self.Themes[self.CurrentTheme].TextDark,
+                    Rotation = 0
                 })
 
                 local DropdownContainer = Create("Frame", {
@@ -898,24 +893,24 @@ end
                 for _, Option in ipairs(Options) do
                     local OptionBtn = Create("TextButton", {
                         Parent = DropdownContainer,
-                        BackgroundColor3 = self.Themes[Config.Theme].Second,
+                        BackgroundColor3 = self.Themes[self.CurrentTheme].Second,
                         Size = UDim2.new(1, -20, 0, 30),
                         Position = UDim2.new(0, 10, 0, 0),
                         Text = Option,
-                        TextColor3 = self.Themes[Config.Theme].Text,
+                        TextColor3 = self.Themes[self.CurrentTheme].Text,
                         TextSize = 13,
                         Font = Enum.Font.Gotham,
                         AutoButtonColor = false
                     })
                     CreateCorner(5).Parent = OptionBtn
-                    CreateStroke(self.Themes[Config.Theme].Stroke, 1).Parent = OptionBtn
+                    CreateStroke(self.Themes[self.CurrentTheme].Stroke, 1).Parent = OptionBtn
 
                     AddConnection(OptionBtn.MouseEnter, function()
-                        TweenService:Create(OptionBtn, TweenInfo.new(0.2), {BackgroundColor3 = self.Themes[Config.Theme].Accent}):Play()
+                        TweenService:Create(OptionBtn, TweenInfo.new(0.2), {BackgroundColor3 = self.Themes[self.CurrentTheme].Accent}):Play()
                     end)
 
                     AddConnection(OptionBtn.MouseLeave, function()
-                        TweenService:Create(OptionBtn, TweenInfo.new(0.2), {BackgroundColor3 = self.Themes[Config.Theme].Second}):Play()
+                        TweenService:Create(OptionBtn, TweenInfo.new(0.2), {BackgroundColor3 = self.Themes[self.CurrentTheme].Second}):Play()
                     end)
 
                     AddConnection(OptionBtn.MouseButton1Click, function()
@@ -954,8 +949,9 @@ function Library:Destroy()
     for _, Connection in pairs(self.Connections) do
         Connection:Disconnect()
     end
-    SwizyGui:Destroy()
+    if SwizyGui then
+        SwizyGui:Destroy()
+    end
 end
 
 return Library
-
