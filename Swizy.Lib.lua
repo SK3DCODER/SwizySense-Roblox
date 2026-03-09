@@ -58,28 +58,32 @@ local function MakeDraggable(DragPoint, Main)
     local DragStart
     local StartPos
 
-    AddConnection(DragPoint.InputBegan, function(Input)
+    local function OnInputBegan(Input)
         if Input.UserInputType == Enum.UserInputType.MouseButton1 then
             Dragging = true
             DragStart = Input.Position
             StartPos = Main.Position
-
-            Input.Changed:Connect(function()
-                if Input.UserInputState == Enum.UserInputState.End then
-                    Dragging = false
-                end
-            end)
         end
-    end)
+    end
 
-    AddConnection(DragPoint.InputChanged, function(Input)
+    local function OnInputChanged(Input)
         if Input.UserInputType == Enum.UserInputType.MouseMovement then
             DragInput = Input
         end
-    end)
+    end
+
+    local function OnInputEnded(Input)
+        if Input.UserInputType == Enum.UserInputType.MouseButton1 then
+            Dragging = false
+        end
+    end
+
+    AddConnection(DragPoint.InputBegan, OnInputBegan)
+    AddConnection(DragPoint.InputChanged, OnInputChanged)
+    AddConnection(DragPoint.InputEnded, OnInputEnded)
 
     AddConnection(UserInputService.InputChanged, function(Input)
-        if Input == DragInput and Dragging then
+        if Input == DragInput and Dragging and Main then
             local Delta = Input.Position - DragStart
             Main.Position = UDim2.new(
                 StartPos.X.Scale,
@@ -183,15 +187,17 @@ function Library:MakeNotification(Config)
     TweenService:Create(ProgressBar, TweenInfo.new(Config.Time, Enum.EasingStyle.Linear), {Size = UDim2.new(0, 0, 0, 2)}):Play()
 
     task.delay(Config.Time - 0.3, function()
-        TweenService:Create(Notification, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {Position = UDim2.new(1, 20, 0, 0), BackgroundTransparency = 1}):Play()
-        TweenService:Create(Title, TweenInfo.new(0.3), {TextTransparency = 1}):Play()
-        TweenService:Create(Content, TweenInfo.new(0.3), {TextTransparency = 1}):Play()
-        TweenService:Create(ProgressBar, TweenInfo.new(0.3), {BackgroundTransparency = 1}):Play()
-        task.delay(0.4, function()
-            if Notification then
-                Notification:Destroy()
-            end
-        end)
+        if Notification and Notification.Parent then
+            TweenService:Create(Notification, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {Position = UDim2.new(1, 20, 0, 0), BackgroundTransparency = 1}):Play()
+            TweenService:Create(Title, TweenInfo.new(0.3), {TextTransparency = 1}):Play()
+            TweenService:Create(Content, TweenInfo.new(0.3), {TextTransparency = 1}):Play()
+            TweenService:Create(ProgressBar, TweenInfo.new(0.3), {BackgroundTransparency = 1}):Play()
+            task.delay(0.4, function()
+                if Notification and Notification.Parent then
+                    Notification:Destroy()
+                end
+            end)
+        end
     end)
 end
 
@@ -214,7 +220,7 @@ function Library:MakePrompt(Config)
     local Prompt = Create("Frame", {
         Parent = Overlay,
         BackgroundColor3 = self.Themes[self.CurrentTheme].Second,
-        Size = UDim2.new(0, 300, 0, 0),
+        Size = UDim2.new(0, 300, 0, 150),
         Position = UDim2.new(0.5, -150, 0.5, -75),
         ZIndex = 1001,
         ClipsDescendants = true
@@ -271,26 +277,32 @@ function Library:MakePrompt(Config)
         CreateStroke(self.Themes[self.CurrentTheme].Stroke, 1).Parent = Button
 
         AddConnection(Button.MouseEnter, function()
-            TweenService:Create(Button, TweenInfo.new(0.2), {BackgroundColor3 = self.Themes[self.CurrentTheme].Accent}):Play()
+            if Button then
+                TweenService:Create(Button, TweenInfo.new(0.2), {BackgroundColor3 = self.Themes[self.CurrentTheme].Accent}):Play()
+            end
         end)
 
         AddConnection(Button.MouseLeave, function()
-            TweenService:Create(Button, TweenInfo.new(0.2), {BackgroundColor3 = self.Themes[self.CurrentTheme].Third}):Play()
+            if Button then
+                TweenService:Create(Button, TweenInfo.new(0.2), {BackgroundColor3 = self.Themes[self.CurrentTheme].Third}):Play()
+            end
         end)
 
         AddConnection(Button.MouseButton1Click, function()
             Config.Callback(ButtonText)
-            TweenService:Create(Overlay, TweenInfo.new(0.3), {BackgroundTransparency = 1}):Play()
-            TweenService:Create(Prompt, TweenInfo.new(0.3), {Size = UDim2.new(0, 0, 0, 0), BackgroundTransparency = 1}):Play()
+            if Overlay and Overlay.Parent then
+                TweenService:Create(Overlay, TweenInfo.new(0.3), {BackgroundTransparency = 1}):Play()
+            end
+            if Prompt and Prompt.Parent then
+                TweenService:Create(Prompt, TweenInfo.new(0.3), {Size = UDim2.new(0, 0, 0, 0), BackgroundTransparency = 1}):Play()
+            end
             task.delay(0.3, function()
-                if Overlay then
+                if Overlay and Overlay.Parent then
                     Overlay:Destroy()
                 end
             end)
         end)
     end
-
-    TweenService:Create(Prompt, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Size = UDim2.new(0, 300, 0, 150)}):Play()
 end
 
 -- Метод для переключения видимости меню
@@ -301,7 +313,7 @@ function Library:ToggleMenu(State)
         self.MenuVisible = not self.MenuVisible
     end
 
-    if self.MainFrame then
+    if self.MainFrame and self.MainFrame.Parent then
         if self.MenuVisible then
             self.MainFrame.Visible = true
             TweenService:Create(self.MainFrame, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
@@ -314,7 +326,7 @@ function Library:ToggleMenu(State)
                 BackgroundTransparency = 1
             }):Play()
             task.delay(0.3, function()
-                if self.MainFrame then
+                if self.MainFrame and self.MainFrame.Parent then
                     self.MainFrame.Visible = false
                 end
             end)
@@ -492,20 +504,24 @@ function Library:CreateWindow(Config)
     })
 
     AddConnection(ContainerLayout:GetPropertyChangedSignal("AbsoluteContentSize"), function()
-        Container.CanvasSize = UDim2.new(0, 0, 0, ContainerLayout.AbsoluteContentSize.Y + 24)
+        if Container and Container.Parent then
+            Container.CanvasSize = UDim2.new(0, 0, 0, ContainerLayout.AbsoluteContentSize.Y + 24)
+        end
     end)
 
     MakeDraggable(TopBar, MainFrame)
 
     -- Завершение интро
     task.delay(2, function()
-        if not IntroIcon or not IntroIcon.Parent then return end
-        if not IntroText or not IntroText.Parent then return end
-        if not IntroOverlay or not IntroOverlay.Parent then return end
-        
-        TweenService:Create(IntroIcon, TweenInfo.new(0.4), {ImageTransparency = 1, Size = UDim2.new(0, 90, 0, 90)}):Play()
-        TweenService:Create(IntroText, TweenInfo.new(0.4), {TextTransparency = 1}):Play()
-        TweenService:Create(IntroOverlay, TweenInfo.new(0.4), {BackgroundTransparency = 1}):Play()
+        if IntroIcon and IntroIcon.Parent then
+            TweenService:Create(IntroIcon, TweenInfo.new(0.4), {ImageTransparency = 1, Size = UDim2.new(0, 90, 0, 90)}):Play()
+        end
+        if IntroText and IntroText.Parent then
+            TweenService:Create(IntroText, TweenInfo.new(0.4), {TextTransparency = 1}):Play()
+        end
+        if IntroOverlay and IntroOverlay.Parent then
+            TweenService:Create(IntroOverlay, TweenInfo.new(0.4), {BackgroundTransparency = 1}):Play()
+        end
         
         task.delay(0.5, function()
             if IntroContainer and IntroContainer.Parent then
@@ -521,23 +537,23 @@ function Library:CreateWindow(Config)
     end)
 
     function Window:AddTab(Name)
-if not TabHolder then return end
-
-local TabFrame = Create("TextButton", {
-    Parent = TabHolder,
-    BackgroundColor3 = Library.Themes[Library.CurrentTheme].Third,
-    Size = UDim2.new(1, -16, 0, 38),
-    Text = "",
-    AutoButtonColor = false
-})
+        if not TabHolder or not TabHolder.Parent then return end
+        
+        local TabFrame = Create("TextButton", {
+            Parent = TabHolder,
+            BackgroundColor3 = Library.Themes[Library.CurrentTheme].Third,
+            Size = UDim2.new(1, -16, 0, 38),
+            Text = "",
+            AutoButtonColor = false
+        })
         CreateCorner(8).Parent = TabFrame
-        CreateStroke(self.Themes[self.CurrentTheme].Stroke, 1).Parent = TabFrame
+        CreateStroke(Library.Themes[Library.CurrentTheme].Stroke, 1).Parent = TabFrame
 
         local TabTitle = Create("TextLabel", {
             Parent = TabFrame,
             BackgroundTransparency = 1,
             Text = Name,
-            TextColor3 = self.Themes[self.CurrentTheme].Text,
+            TextColor3 = Library.Themes[Library.CurrentTheme].Text,
             TextSize = 15,
             Font = Enum.Font.GothamSemibold,
             Size = UDim2.new(1, -10, 1, 0),
@@ -561,13 +577,13 @@ local TabFrame = Create("TextButton", {
         })
 
         AddConnection(TabLayout:GetPropertyChangedSignal("AbsoluteContentSize"), function()
-            if TabContainer then
+            if TabContainer and TabContainer.Parent then
                 TabContainer.CanvasSize = UDim2.new(0, 0, 0, TabLayout.AbsoluteContentSize.Y)
             end
         end)
 
         if FirstTab then
-            TabFrame.BackgroundColor3 = self.Themes[self.CurrentTheme].Accent
+            TabFrame.BackgroundColor3 = Library.Themes[Library.CurrentTheme].Accent
             TabContainer.Visible = true
             FirstTab = false
         end
@@ -575,7 +591,7 @@ local TabFrame = Create("TextButton", {
         AddConnection(TabFrame.MouseButton1Click, function()
             for _, v in pairs(TabHolder:GetChildren()) do
                 if v:IsA("TextButton") and v ~= TabFrame then
-                    TweenService:Create(v, TweenInfo.new(0.2), {BackgroundColor3 = self.Themes[self.CurrentTheme].Third}):Play()
+                    TweenService:Create(v, TweenInfo.new(0.2), {BackgroundColor3 = Library.Themes[Library.CurrentTheme].Third}):Play()
                 end
             end
             for _, v in pairs(Container:GetChildren()) do
@@ -583,28 +599,28 @@ local TabFrame = Create("TextButton", {
                     v.Visible = false
                 end
             end
-            TweenService:Create(TabFrame, TweenInfo.new(0.2), {BackgroundColor3 = self.Themes[self.CurrentTheme].Accent}):Play()
+            TweenService:Create(TabFrame, TweenInfo.new(0.2), {BackgroundColor3 = Library.Themes[Library.CurrentTheme].Accent}):Play()
             TabContainer.Visible = true
         end)
 
         local Tab = {}
 
         function Tab:AddSection(Name)
-            if not TabContainer then return end
+            if not TabContainer or not TabContainer.Parent then return end
             
             local SectionFrame = Create("Frame", {
                 Parent = TabContainer,
-                BackgroundColor3 = self.Themes[self.CurrentTheme].Second,
+                BackgroundColor3 = Library.Themes[Library.CurrentTheme].Second,
                 Size = UDim2.new(1, 0, 0, 35)
             })
             CreateCorner(8).Parent = SectionFrame
-            CreateStroke(self.Themes[self.CurrentTheme].Stroke, 1).Parent = SectionFrame
+            CreateStroke(Library.Themes[Library.CurrentTheme].Stroke, 1).Parent = SectionFrame
 
             local SectionTitle = Create("TextLabel", {
                 Parent = SectionFrame,
                 BackgroundTransparency = 1,
                 Text = Name,
-                TextColor3 = self.Themes[self.CurrentTheme].Accent,
+                TextColor3 = Library.Themes[Library.CurrentTheme].Accent,
                 TextSize = 16,
                 Font = Enum.Font.GothamBold,
                 Position = UDim2.new(0, 12, 0, 0),
@@ -627,7 +643,7 @@ local TabFrame = Create("TextButton", {
             })
 
             AddConnection(SectionLayout:GetPropertyChangedSignal("AbsoluteContentSize"), function()
-                if SectionFrame then
+                if SectionFrame and SectionFrame.Parent then
                     SectionFrame.Size = UDim2.new(1, 0, 0, SectionLayout.AbsoluteContentSize.Y + 55)
                 end
             end)
@@ -636,23 +652,23 @@ local TabFrame = Create("TextButton", {
 
             function Section:AddButton(Text, Callback)
                 Callback = Callback or function() end
-                if not SectionContainer then return end
+                if not SectionContainer or not SectionContainer.Parent then return end
 
                 local Button = Create("TextButton", {
                     Parent = SectionContainer,
-                    BackgroundColor3 = self.Themes[self.CurrentTheme].Third,
+                    BackgroundColor3 = Library.Themes[Library.CurrentTheme].Third,
                     Size = UDim2.new(1, 0, 0, 35),
                     Text = "",
                     AutoButtonColor = false
                 })
                 CreateCorner(6).Parent = Button
-                CreateStroke(self.Themes[self.CurrentTheme].Stroke, 1).Parent = Button
+                CreateStroke(Library.Themes[Library.CurrentTheme].Stroke, 1).Parent = Button
 
                 local ButtonText = Create("TextLabel", {
                     Parent = Button,
                     BackgroundTransparency = 1,
                     Text = Text,
-                    TextColor3 = self.Themes[self.CurrentTheme].Text,
+                    TextColor3 = Library.Themes[Library.CurrentTheme].Text,
                     TextSize = 14,
                     Font = Enum.Font.Gotham,
                     Size = UDim2.new(1, -40, 1, 0),
@@ -666,22 +682,26 @@ local TabFrame = Create("TextButton", {
                     Image = "rbxassetid://6031094678",
                     Size = UDim2.new(0, 18, 0, 18),
                     Position = UDim2.new(1, -30, 0.5, -9),
-                    ImageColor3 = self.Themes[self.CurrentTheme].Accent
+                    ImageColor3 = Library.Themes[Library.CurrentTheme].Accent
                 })
 
                 AddConnection(Button.MouseEnter, function()
-                    TweenService:Create(Button, TweenInfo.new(0.2), {BackgroundColor3 = self.Themes[self.CurrentTheme].Accent}):Play()
+                    if Button then
+                        TweenService:Create(Button, TweenInfo.new(0.2), {BackgroundColor3 = Library.Themes[Library.CurrentTheme].Accent}):Play()
+                    end
                 end)
 
                 AddConnection(Button.MouseLeave, function()
-                    TweenService:Create(Button, TweenInfo.new(0.2), {BackgroundColor3 = self.Themes[self.CurrentTheme].Third}):Play()
+                    if Button then
+                        TweenService:Create(Button, TweenInfo.new(0.2), {BackgroundColor3 = Library.Themes[Library.CurrentTheme].Third}):Play()
+                    end
                 end)
 
                 AddConnection(Button.MouseButton1Click, Callback)
 
                 local Btn = {}
                 function Btn:Set(NewText)
-                    if ButtonText then
+                    if ButtonText and ButtonText.Parent then
                         ButtonText.Text = NewText
                     end
                 end
@@ -690,25 +710,25 @@ local TabFrame = Create("TextButton", {
 
             function Section:AddToggle(Text, Default, Callback)
                 Callback = Callback or function() end
-                if not SectionContainer then return end
+                if not SectionContainer or not SectionContainer.Parent then return end
                 
                 local State = Default or false
 
                 local Toggle = Create("TextButton", {
                     Parent = SectionContainer,
-                    BackgroundColor3 = self.Themes[self.CurrentTheme].Third,
+                    BackgroundColor3 = Library.Themes[Library.CurrentTheme].Third,
                     Size = UDim2.new(1, 0, 0, 35),
                     Text = "",
                     AutoButtonColor = false
                 })
                 CreateCorner(6).Parent = Toggle
-                CreateStroke(self.Themes[self.CurrentTheme].Stroke, 1).Parent = Toggle
+                CreateStroke(Library.Themes[Library.CurrentTheme].Stroke, 1).Parent = Toggle
 
                 local ToggleText = Create("TextLabel", {
                     Parent = Toggle,
                     BackgroundTransparency = 1,
                     Text = Text,
-                    TextColor3 = self.Themes[self.CurrentTheme].Text,
+                    TextColor3 = Library.Themes[Library.CurrentTheme].Text,
                     TextSize = 14,
                     Font = Enum.Font.Gotham,
                     Size = UDim2.new(1, -60, 1, 0),
@@ -718,24 +738,26 @@ local TabFrame = Create("TextButton", {
 
                 local ToggleBox = Create("Frame", {
                     Parent = Toggle,
-                    BackgroundColor3 = State and self.Themes[self.CurrentTheme].Accent or self.Themes[self.CurrentTheme].Main,
+                    BackgroundColor3 = State and Library.Themes[Library.CurrentTheme].Accent or Library.Themes[Library.CurrentTheme].Main,
                     Size = UDim2.new(0, 44, 0, 22),
                     Position = UDim2.new(1, -56, 0.5, -11)
                 })
                 CreateCorner(11).Parent = ToggleBox
-                CreateStroke(self.Themes[self.CurrentTheme].Stroke, 0.5).Parent = ToggleBox
+                CreateStroke(Library.Themes[Library.CurrentTheme].Stroke, 0.5).Parent = ToggleBox
 
                 local ToggleCircle = Create("Frame", {
                     Parent = ToggleBox,
-                    BackgroundColor3 = self.Themes[self.CurrentTheme].Text,
+                    BackgroundColor3 = Library.Themes[Library.CurrentTheme].Text,
                     Size = UDim2.new(0, 18, 0, 18),
                     Position = State and UDim2.new(1, -20, 0.5, -9) or UDim2.new(0, 2, 0.5, -9)
                 })
                 CreateCorner(9).Parent = ToggleCircle
 
                 local function UpdateVisual()
-                    if not ToggleBox or not ToggleCircle then return end
-                    TweenService:Create(ToggleBox, TweenInfo.new(0.2), {BackgroundColor3 = State and self.Themes[self.CurrentTheme].Accent or self.Themes[self.CurrentTheme].Main}):Play()
+                    if not ToggleBox or not ToggleBox.Parent then return end
+                    if not ToggleCircle or not ToggleCircle.Parent then return end
+                    
+                    TweenService:Create(ToggleBox, TweenInfo.new(0.2), {BackgroundColor3 = State and Library.Themes[Library.CurrentTheme].Accent or Library.Themes[Library.CurrentTheme].Main}):Play()
                     TweenService:Create(ToggleCircle, TweenInfo.new(0.2), {Position = State and UDim2.new(1, -20, 0.5, -9) or UDim2.new(0, 2, 0.5, -9)}):Play()
                 end
 
@@ -756,25 +778,25 @@ local TabFrame = Create("TextButton", {
 
             function Section:AddSlider(Text, Min, Max, Default, Callback)
                 Callback = Callback or function() end
-                if not SectionContainer then return end
+                if not SectionContainer or not SectionContainer.Parent then return end
                 
                 local Value = Default or Min
                 local Dragging = false
 
                 local Slider = Create("Frame", {
                     Parent = SectionContainer,
-                    BackgroundColor3 = self.Themes[self.CurrentTheme].Third,
+                    BackgroundColor3 = Library.Themes[Library.CurrentTheme].Third,
                     Size = UDim2.new(1, 0, 0, 60),
                     ClipsDescendants = true
                 })
                 CreateCorner(6).Parent = Slider
-                CreateStroke(self.Themes[self.CurrentTheme].Stroke, 1).Parent = Slider
+                CreateStroke(Library.Themes[Library.CurrentTheme].Stroke, 1).Parent = Slider
 
                 local SliderText = Create("TextLabel", {
                     Parent = Slider,
                     BackgroundTransparency = 1,
                     Text = Text,
-                    TextColor3 = self.Themes[self.CurrentTheme].Text,
+                    TextColor3 = Library.Themes[Library.CurrentTheme].Text,
                     TextSize = 14,
                     Font = Enum.Font.Gotham,
                     Size = UDim2.new(1, -24, 0, 20),
@@ -786,7 +808,7 @@ local TabFrame = Create("TextButton", {
                     Parent = Slider,
                     BackgroundTransparency = 1,
                     Text = tostring(Value),
-                    TextColor3 = self.Themes[self.CurrentTheme].Accent,
+                    TextColor3 = Library.Themes[Library.CurrentTheme].Accent,
                     TextSize = 14,
                     Font = Enum.Font.GothamBold,
                     Size = UDim2.new(0, 50, 0, 20),
@@ -795,7 +817,7 @@ local TabFrame = Create("TextButton", {
 
                 local SliderBar = Create("Frame", {
                     Parent = Slider,
-                    BackgroundColor3 = self.Themes[self.CurrentTheme].Main,
+                    BackgroundColor3 = Library.Themes[Library.CurrentTheme].Main,
                     Size = UDim2.new(1, -24, 0, 12),
                     Position = UDim2.new(0, 12, 0, 35)
                 })
@@ -803,7 +825,7 @@ local TabFrame = Create("TextButton", {
 
                 local FillBar = Create("Frame", {
                     Parent = SliderBar,
-                    BackgroundColor3 = self.Themes[self.CurrentTheme].Accent,
+                    BackgroundColor3 = Library.Themes[Library.CurrentTheme].Accent,
                     Size = UDim2.new((Value - Min) / (Max - Min), 0, 1, 0)
                 })
                 CreateCorner(6).Parent = FillBar
@@ -826,8 +848,13 @@ local TabFrame = Create("TextButton", {
                         Percentage = math.clamp(Percentage, 0, 1)
                         Value = Min + (Max - Min) * Percentage
                         Value = math.floor(Value * 100) / 100
-                        ValueLabel.Text = tostring(Value)
-                        FillBar.Size = UDim2.new(Percentage, 0, 1, 0)
+                        
+                        if ValueLabel and ValueLabel.Parent then
+                            ValueLabel.Text = tostring(Value)
+                        end
+                        if FillBar and FillBar.Parent then
+                            FillBar.Size = UDim2.new(Percentage, 0, 1, 0)
+                        end
                         Callback(Value)
                     end
                 end)
@@ -835,8 +862,12 @@ local TabFrame = Create("TextButton", {
                 local Sld = {}
                 function Sld:Set(NewValue)
                     Value = math.clamp(NewValue, Min, Max)
-                    ValueLabel.Text = tostring(Value)
-                    FillBar.Size = UDim2.new((Value - Min) / (Max - Min), 0, 1, 0)
+                    if ValueLabel and ValueLabel.Parent then
+                        ValueLabel.Text = tostring(Value)
+                    end
+                    if FillBar and FillBar.Parent then
+                        FillBar.Size = UDim2.new((Value - Min) / (Max - Min), 0, 1, 0)
+                    end
                     Callback(Value)
                 end
                 return Sld
@@ -844,25 +875,25 @@ local TabFrame = Create("TextButton", {
 
             function Section:AddDropdown(Text, Options, Default, Callback)
                 Callback = Callback or function() end
-                if not SectionContainer then return end
+                if not SectionContainer or not SectionContainer.Parent then return end
                 
                 local Toggled = false
                 local Selected = Default or Options[1] or "Select"
 
                 local Dropdown = Create("Frame", {
                     Parent = SectionContainer,
-                    BackgroundColor3 = self.Themes[self.CurrentTheme].Third,
+                    BackgroundColor3 = Library.Themes[Library.CurrentTheme].Third,
                     Size = UDim2.new(1, 0, 0, 45),
                     ClipsDescendants = true
                 })
                 CreateCorner(6).Parent = Dropdown
-                CreateStroke(self.Themes[self.CurrentTheme].Stroke, 1).Parent = Dropdown
+                CreateStroke(Library.Themes[Library.CurrentTheme].Stroke, 1).Parent = Dropdown
 
                 local Title = Create("TextLabel", {
                     Parent = Dropdown,
                     BackgroundTransparency = 1,
                     Text = Text,
-                    TextColor3 = self.Themes[self.CurrentTheme].Text,
+                    TextColor3 = Library.Themes[Library.CurrentTheme].Text,
                     TextSize = 14,
                     Font = Enum.Font.Gotham,
                     Size = UDim2.new(0.6, -12, 1, 0),
@@ -874,7 +905,7 @@ local TabFrame = Create("TextButton", {
                     Parent = Dropdown,
                     BackgroundTransparency = 1,
                     Text = Selected,
-                    TextColor3 = self.Themes[self.CurrentTheme].Accent,
+                    TextColor3 = Library.Themes[Library.CurrentTheme].Accent,
                     TextSize = 14,
                     Font = Enum.Font.GothamSemibold,
                     Size = UDim2.new(0.4, -30, 1, 0),
@@ -888,7 +919,7 @@ local TabFrame = Create("TextButton", {
                     Image = "rbxassetid://6031094678",
                     Size = UDim2.new(0, 16, 0, 16),
                     Position = UDim2.new(1, -25, 0.5, -8),
-                    ImageColor3 = self.Themes[self.CurrentTheme].TextDark,
+                    ImageColor3 = Library.Themes[Library.CurrentTheme].TextDark,
                     Rotation = 0
                 })
 
@@ -907,8 +938,9 @@ local TabFrame = Create("TextButton", {
                 })
 
                 local function UpdateSize()
-                    if not Dropdown then return end
-                    Dropdown.Size = Toggled and UDim2.new(1, 0, 0, 45 + DropdownLayout.AbsoluteContentSize.Y) or UDim2.new(1, 0, 0, 45)
+                    if Dropdown and Dropdown.Parent then
+                        Dropdown.Size = Toggled and UDim2.new(1, 0, 0, 45 + DropdownLayout.AbsoluteContentSize.Y) or UDim2.new(1, 0, 0, 45)
+                    end
                 end
 
                 AddConnection(DropdownLayout:GetPropertyChangedSignal("AbsoluteContentSize"), UpdateSize)
@@ -924,38 +956,48 @@ local TabFrame = Create("TextButton", {
                 AddConnection(Button.MouseButton1Click, function()
                     Toggled = not Toggled
                     UpdateSize()
-                    TweenService:Create(Arrow, TweenInfo.new(0.2), {Rotation = Toggled and 180 or 0}):Play()
+                    if Arrow and Arrow.Parent then
+                        TweenService:Create(Arrow, TweenInfo.new(0.2), {Rotation = Toggled and 180 or 0}):Play()
+                    end
                 end)
 
                 for _, Option in ipairs(Options) do
                     local OptionBtn = Create("TextButton", {
                         Parent = DropdownContainer,
-                        BackgroundColor3 = self.Themes[self.CurrentTheme].Second,
+                        BackgroundColor3 = Library.Themes[Library.CurrentTheme].Second,
                         Size = UDim2.new(1, -20, 0, 30),
                         Position = UDim2.new(0, 10, 0, 0),
                         Text = Option,
-                        TextColor3 = self.Themes[self.CurrentTheme].Text,
+                        TextColor3 = Library.Themes[Library.CurrentTheme].Text,
                         TextSize = 13,
                         Font = Enum.Font.Gotham,
                         AutoButtonColor = false
                     })
                     CreateCorner(5).Parent = OptionBtn
-                    CreateStroke(self.Themes[self.CurrentTheme].Stroke, 1).Parent = OptionBtn
+                    CreateStroke(Library.Themes[Library.CurrentTheme].Stroke, 1).Parent = OptionBtn
 
                     AddConnection(OptionBtn.MouseEnter, function()
-                        TweenService:Create(OptionBtn, TweenInfo.new(0.2), {BackgroundColor3 = self.Themes[self.CurrentTheme].Accent}):Play()
+                        if OptionBtn then
+                            TweenService:Create(OptionBtn, TweenInfo.new(0.2), {BackgroundColor3 = Library.Themes[Library.CurrentTheme].Accent}):Play()
+                        end
                     end)
 
                     AddConnection(OptionBtn.MouseLeave, function()
-                        TweenService:Create(OptionBtn, TweenInfo.new(0.2), {BackgroundColor3 = self.Themes[self.CurrentTheme].Second}):Play()
+                        if OptionBtn then
+                            TweenService:Create(OptionBtn, TweenInfo.new(0.2), {BackgroundColor3 = Library.Themes[Library.CurrentTheme].Second}):Play()
+                        end
                     end)
 
                     AddConnection(OptionBtn.MouseButton1Click, function()
                         Selected = Option
-                        SelectedLabel.Text = Selected
+                        if SelectedLabel and SelectedLabel.Parent then
+                            SelectedLabel.Text = Selected
+                        end
                         Toggled = false
                         UpdateSize()
-                        TweenService:Create(Arrow, TweenInfo.new(0.2), {Rotation = 0}):Play()
+                        if Arrow and Arrow.Parent then
+                            TweenService:Create(Arrow, TweenInfo.new(0.2), {Rotation = 0}):Play()
+                        end
                         Callback(Selected)
                     end)
                 end
@@ -966,7 +1008,9 @@ local TabFrame = Create("TextButton", {
                 function Dpd:Set(Option)
                     if table.find(Options, Option) then
                         Selected = Option
-                        SelectedLabel.Text = Selected
+                        if SelectedLabel and SelectedLabel.Parent then
+                            SelectedLabel.Text = Selected
+                        end
                         Callback(Selected)
                     end
                 end
@@ -998,4 +1042,3 @@ function Library:Destroy()
 end
 
 return Library
-
