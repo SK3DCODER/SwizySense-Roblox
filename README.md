@@ -1,6 +1,7 @@
-Juicewrld legend 999
+-----------------------------
+|  S  W  I  Z  Y .  S  E  N  S  E  |
+-----------------------------
 
-Lua Scripts using in solara
+Repository with my Roblox scripts. Here are stored developments, scripts and modules for different places.
 
-
-loadstring(game:HttpGet('https://raw.githubusercontent.com/sk3dhub/ROBLOX/main/breakin2SK3D.lua'))()
+Репозиторий с моими скриптами для Roblox. Здесь хранятся наработки, скрипты и модули для разных плейсов.
