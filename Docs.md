@@ -1,11 +1,13 @@
-Swizy.Lib Documentation
+# Swizy.Lib Documentation
 This documentation is for the Swizy.Lib UI Library.
 
-Loading the Library
-lua
-local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/SK3DCODER/SwizySense-Roblox/refs/heads/main/Swizy.Lib.lua"))()
-Creating a Window
-lua
+## Booting the Library
+```lua
+local Library = loadstring(game:HttpGet(('https://raw.githubusercontent.com/SK3DCODER/SwizySense-Roblox/refs/heads/main/Swizy.Lib.lua')))()
+```
+
+## Creating a Window
+```lua
 local Window = Library:CreateWindow({
     Name = "Swizy.Lib",
     Size = UDim2.new(0, 650, 0, 450),
@@ -17,8 +19,10 @@ Name = <string> - Window title.
 Size = <UDim2> - Window size (width, height).
 Theme = <string> - Theme (only "Dark" for now).
 ]]
-Creating a Tab
-lua
+```
+
+## Creating a Tab
+```lua
 local Tab = Window:AddTab("Main")
 
 --[[
@@ -142,12 +146,12 @@ RightShift - Open/close menu
 U (top bar button) - Unload library
 
 X (top bar button) - Hide menu
+```
 
 
 
-
-Complete Example
-lua
+## Complete Example
+```lua
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/SK3DCODER/SwizySense-Roblox/refs/heads/main/Swizy.Lib.lua"))()
 
 local Window = Library:CreateWindow({
@@ -173,3 +177,4 @@ end)
 Section:AddSlider("Value", 0, 100, 50, function(value)
     print("Value:", value)
 end)
+```
