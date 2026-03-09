@@ -521,15 +521,15 @@ function Library:CreateWindow(Config)
     end)
 
     function Window:AddTab(Name)
-        if not TabHolder then return end
-        
-        local TabFrame = Create("TextButton", {
-            Parent = TabHolder,
-            BackgroundColor3 = self.Themes[self.CurrentTheme].Third,
-            Size = UDim2.new(1, -16, 0, 38),
-            Text = "",
-            AutoButtonColor = false
-        })
+if not TabHolder then return end
+
+local TabFrame = Create("TextButton", {
+    Parent = TabHolder,
+    BackgroundColor3 = Library.Themes[Library.CurrentTheme].Third,
+    Size = UDim2.new(1, -16, 0, 38),
+    Text = "",
+    AutoButtonColor = false
+})
         CreateCorner(8).Parent = TabFrame
         CreateStroke(self.Themes[self.CurrentTheme].Stroke, 1).Parent = TabFrame
 
@@ -998,3 +998,4 @@ function Library:Destroy()
 end
 
 return Library
+
