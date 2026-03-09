@@ -108,6 +108,22 @@ local function CreateStroke(Color, Thickness)
     })
 end
 
+-- Функция для выгрузки библиотеки
+function Library:Unload()
+    for i, Connection in ipairs(self.Connections) do
+        pcall(function()
+            if Connection then
+                Connection:Disconnect()
+            end
+        end)
+    end
+    self.Connections = {}
+    
+    if SwizyGui and SwizyGui.Parent then
+        SwizyGui:Destroy()
+    end
+end
+
 -- Метод для создания уведомлений
 function Library:MakeNotification(Config)
     Config = Config or {}
@@ -351,57 +367,6 @@ function Library:CreateWindow(Config)
 
     self.OriginalSize = Config.Size
 
-    -- Интро анимация
-    local IntroOverlay = Create("Frame", {
-        Parent = SwizyGui,
-        BackgroundColor3 = Color3.fromRGB(0, 0, 0),
-        Size = UDim2.new(1, 0, 1, 0),
-        BackgroundTransparency = 0,
-        ZIndex = 999
-    })
-
-    local IntroContainer = Create("Frame", {
-        Parent = SwizyGui,
-        BackgroundTransparency = 1,
-        Size = UDim2.new(0, 250, 0, 120),
-        Position = UDim2.new(0.5, -125, 0.5, -60),
-        ZIndex = 1000
-    })
-
-    local IntroIcon = Create("ImageLabel", {
-        Parent = IntroContainer,
-        BackgroundTransparency = 1,
-        Image = "rbxassetid://6031094678",
-        Size = UDim2.new(0, 70, 0, 70),
-        Position = UDim2.new(0.5, -35, 0, 0),
-        ImageColor3 = self.Themes[self.CurrentTheme].Accent,
-        ImageTransparency = 0,
-        ZIndex = 1000
-    })
-
-    local IntroText = Create("TextLabel", {
-        Parent = IntroContainer,
-        BackgroundTransparency = 1,
-        Text = "Swizy.Lib",
-        TextColor3 = self.Themes[self.CurrentTheme].Text,
-        TextSize = 28,
-        Font = Enum.Font.GothamBlack,
-        Size = UDim2.new(1, 0, 0, 40),
-        Position = UDim2.new(0, 0, 0, 75),
-        ZIndex = 1000
-    })
-
-    -- Анимация интро
-    TweenService:Create(IntroIcon, TweenInfo.new(1, Enum.EasingStyle.Elastic, Enum.EasingDirection.Out), {
-        Size = UDim2.new(0, 80, 0, 80),
-        Position = UDim2.new(0.5, -40, 0, -5)
-    }):Play()
-
-    TweenService:Create(IntroText, TweenInfo.new(0.5, Enum.EasingStyle.Quad), {
-        TextTransparency = 0,
-        Position = UDim2.new(0, 0, 0, 80)
-    }):Play()
-
     -- Главное окно
     local MainFrame = Create("Frame", {
         Parent = SwizyGui,
@@ -409,7 +374,7 @@ function Library:CreateWindow(Config)
         Size = Config.Size,
         Position = UDim2.new(0.5, -Config.Size.X.Offset/2, 0.5, -Config.Size.Y.Offset/2),
         ClipsDescendants = true,
-        Visible = false
+        Visible = true
     })
     CreateCorner(10).Parent = MainFrame
     CreateStroke(self.Themes[self.CurrentTheme].Stroke, 1).Parent = MainFrame
@@ -437,6 +402,32 @@ function Library:CreateWindow(Config)
         TextXAlignment = Enum.TextXAlignment.Left
     })
 
+    -- Кнопка Unload
+    local UnloadBtn = Create("TextButton", {
+        Parent = TopBar,
+        BackgroundTransparency = 1,
+        Size = UDim2.new(0, 30, 0, 30),
+        Position = UDim2.new(1, -80, 0.5, -15),
+        Text = "U",
+        TextColor3 = self.Themes[self.CurrentTheme].Text,
+        TextSize = 18,
+        Font = Enum.Font.GothamBold,
+        AutoButtonColor = false
+    })
+
+    AddConnection(UnloadBtn.MouseEnter, function()
+        TweenService:Create(UnloadBtn, TweenInfo.new(0.2), {TextColor3 = self.Themes[self.CurrentTheme].Accent}):Play()
+    end)
+
+    AddConnection(UnloadBtn.MouseLeave, function()
+        TweenService:Create(UnloadBtn, TweenInfo.new(0.2), {TextColor3 = self.Themes[self.CurrentTheme].Text}):Play()
+    end)
+
+    AddConnection(UnloadBtn.MouseButton1Click, function()
+        Library:Unload()
+    end)
+
+    -- Кнопка Close
     local CloseBtn = Create("TextButton", {
         Parent = TopBar,
         BackgroundTransparency = 1,
@@ -448,6 +439,14 @@ function Library:CreateWindow(Config)
         Font = Enum.Font.GothamBold,
         AutoButtonColor = false
     })
+
+    AddConnection(CloseBtn.MouseEnter, function()
+        TweenService:Create(CloseBtn, TweenInfo.new(0.2), {TextColor3 = Color3.fromRGB(255, 80, 80)}):Play()
+    end)
+
+    AddConnection(CloseBtn.MouseLeave, function()
+        TweenService:Create(CloseBtn, TweenInfo.new(0.2), {TextColor3 = self.Themes[self.CurrentTheme].Text}):Play()
+    end)
 
     AddConnection(CloseBtn.MouseButton1Click, function()
         self:ToggleMenu(false)
@@ -510,31 +509,6 @@ function Library:CreateWindow(Config)
     end)
 
     MakeDraggable(TopBar, MainFrame)
-
-    -- Завершение интро
-    task.delay(2, function()
-        if IntroIcon and IntroIcon.Parent then
-            TweenService:Create(IntroIcon, TweenInfo.new(0.4), {ImageTransparency = 1, Size = UDim2.new(0, 90, 0, 90)}):Play()
-        end
-        if IntroText and IntroText.Parent then
-            TweenService:Create(IntroText, TweenInfo.new(0.4), {TextTransparency = 1}):Play()
-        end
-        if IntroOverlay and IntroOverlay.Parent then
-            TweenService:Create(IntroOverlay, TweenInfo.new(0.4), {BackgroundTransparency = 1}):Play()
-        end
-        
-        task.delay(0.5, function()
-            if IntroContainer and IntroContainer.Parent then
-                IntroContainer:Destroy()
-            end
-            if IntroOverlay and IntroOverlay.Parent then
-                IntroOverlay:Destroy()
-            end
-            if MainFrame and MainFrame.Parent then
-                MainFrame.Visible = true
-            end
-        end)
-    end)
 
     function Window:AddTab(Name)
         if not TabHolder or not TabHolder.Parent then return end
@@ -1024,21 +998,6 @@ function Library:CreateWindow(Config)
     end
 
     return Window
-end
-
-function Library:Destroy()
-    for i, Connection in ipairs(self.Connections) do
-        pcall(function()
-            if Connection then
-                Connection:Disconnect()
-            end
-        end)
-    end
-    self.Connections = {}
-    
-    if SwizyGui and SwizyGui.Parent then
-        SwizyGui:Destroy()
-    end
 end
 
 return Library
