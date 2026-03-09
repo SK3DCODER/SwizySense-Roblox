@@ -9,7 +9,6 @@ local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local Mouse = LocalPlayer:GetMouse()
-local HttpService = game:GetService("HttpService")
 
 local Library = {
     Flags = {},
@@ -188,7 +187,11 @@ function Library:MakeNotification(Config)
         TweenService:Create(Title, TweenInfo.new(0.3), {TextTransparency = 1}):Play()
         TweenService:Create(Content, TweenInfo.new(0.3), {TextTransparency = 1}):Play()
         TweenService:Create(ProgressBar, TweenInfo.new(0.3), {BackgroundTransparency = 1}):Play()
-        task.delay(0.4, Notification.Destroy, Notification)
+        task.delay(0.4, function()
+            if Notification then
+                Notification:Destroy()
+            end
+        end)
     end)
 end
 
@@ -279,7 +282,11 @@ function Library:MakePrompt(Config)
             Config.Callback(ButtonText)
             TweenService:Create(Overlay, TweenInfo.new(0.3), {BackgroundTransparency = 1}):Play()
             TweenService:Create(Prompt, TweenInfo.new(0.3), {Size = UDim2.new(0, 0, 0, 0), BackgroundTransparency = 1}):Play()
-            task.delay(0.3, Overlay.Destroy, Overlay)
+            task.delay(0.3, function()
+                if Overlay then
+                    Overlay:Destroy()
+                end
+            end)
         end)
     end
 
@@ -383,7 +390,7 @@ function Library:CreateWindow(Config)
         Position = UDim2.new(0, 0, 0, 80)
     }):Play()
 
-    -- Главное окно (создаем сразу, но скрытое)
+    -- Главное окно
     local MainFrame = Create("Frame", {
         Parent = SwizyGui,
         BackgroundColor3 = self.Themes[self.CurrentTheme].Main,
@@ -490,19 +497,32 @@ function Library:CreateWindow(Config)
 
     MakeDraggable(TopBar, MainFrame)
 
-    -- Завершение интро и показ меню
+    -- Завершение интро
     task.delay(2, function()
+        if not IntroIcon or not IntroIcon.Parent then return end
+        if not IntroText or not IntroText.Parent then return end
+        if not IntroOverlay or not IntroOverlay.Parent then return end
+        
         TweenService:Create(IntroIcon, TweenInfo.new(0.4), {ImageTransparency = 1, Size = UDim2.new(0, 90, 0, 90)}):Play()
         TweenService:Create(IntroText, TweenInfo.new(0.4), {TextTransparency = 1}):Play()
         TweenService:Create(IntroOverlay, TweenInfo.new(0.4), {BackgroundTransparency = 1}):Play()
+        
         task.delay(0.5, function()
-            if IntroContainer then IntroContainer:Destroy() end
-            if IntroOverlay then IntroOverlay:Destroy() end
-            if MainFrame then MainFrame.Visible = true end
+            if IntroContainer and IntroContainer.Parent then
+                IntroContainer:Destroy()
+            end
+            if IntroOverlay and IntroOverlay.Parent then
+                IntroOverlay:Destroy()
+            end
+            if MainFrame and MainFrame.Parent then
+                MainFrame.Visible = true
+            end
         end)
     end)
 
     function Window:AddTab(Name)
+        if not TabHolder then return end
+        
         local TabFrame = Create("TextButton", {
             Parent = TabHolder,
             BackgroundColor3 = self.Themes[self.CurrentTheme].Third,
@@ -541,7 +561,9 @@ function Library:CreateWindow(Config)
         })
 
         AddConnection(TabLayout:GetPropertyChangedSignal("AbsoluteContentSize"), function()
-            TabContainer.CanvasSize = UDim2.new(0, 0, 0, TabLayout.AbsoluteContentSize.Y)
+            if TabContainer then
+                TabContainer.CanvasSize = UDim2.new(0, 0, 0, TabLayout.AbsoluteContentSize.Y)
+            end
         end)
 
         if FirstTab then
@@ -552,12 +574,12 @@ function Library:CreateWindow(Config)
 
         AddConnection(TabFrame.MouseButton1Click, function()
             for _, v in pairs(TabHolder:GetChildren()) do
-                if v:IsA("TextButton") then
+                if v:IsA("TextButton") and v ~= TabFrame then
                     TweenService:Create(v, TweenInfo.new(0.2), {BackgroundColor3 = self.Themes[self.CurrentTheme].Third}):Play()
                 end
             end
             for _, v in pairs(Container:GetChildren()) do
-                if v:IsA("ScrollingFrame") then
+                if v:IsA("ScrollingFrame") and v ~= TabContainer then
                     v.Visible = false
                 end
             end
@@ -568,6 +590,8 @@ function Library:CreateWindow(Config)
         local Tab = {}
 
         function Tab:AddSection(Name)
+            if not TabContainer then return end
+            
             local SectionFrame = Create("Frame", {
                 Parent = TabContainer,
                 BackgroundColor3 = self.Themes[self.CurrentTheme].Second,
@@ -603,13 +627,16 @@ function Library:CreateWindow(Config)
             })
 
             AddConnection(SectionLayout:GetPropertyChangedSignal("AbsoluteContentSize"), function()
-                SectionFrame.Size = UDim2.new(1, 0, 0, SectionLayout.AbsoluteContentSize.Y + 55)
+                if SectionFrame then
+                    SectionFrame.Size = UDim2.new(1, 0, 0, SectionLayout.AbsoluteContentSize.Y + 55)
+                end
             end)
 
             local Section = {}
 
             function Section:AddButton(Text, Callback)
                 Callback = Callback or function() end
+                if not SectionContainer then return end
 
                 local Button = Create("TextButton", {
                     Parent = SectionContainer,
@@ -633,7 +660,7 @@ function Library:CreateWindow(Config)
                     TextXAlignment = Enum.TextXAlignment.Left
                 })
 
-                local ButtonIcon = Create("ImageLabel", {
+                Create("ImageLabel", {
                     Parent = Button,
                     BackgroundTransparency = 1,
                     Image = "rbxassetid://6031094678",
@@ -654,13 +681,17 @@ function Library:CreateWindow(Config)
 
                 local Btn = {}
                 function Btn:Set(NewText)
-                    ButtonText.Text = NewText
+                    if ButtonText then
+                        ButtonText.Text = NewText
+                    end
                 end
                 return Btn
             end
 
             function Section:AddToggle(Text, Default, Callback)
                 Callback = Callback or function() end
+                if not SectionContainer then return end
+                
                 local State = Default or false
 
                 local Toggle = Create("TextButton", {
@@ -703,6 +734,7 @@ function Library:CreateWindow(Config)
                 CreateCorner(9).Parent = ToggleCircle
 
                 local function UpdateVisual()
+                    if not ToggleBox or not ToggleCircle then return end
                     TweenService:Create(ToggleBox, TweenInfo.new(0.2), {BackgroundColor3 = State and self.Themes[self.CurrentTheme].Accent or self.Themes[self.CurrentTheme].Main}):Play()
                     TweenService:Create(ToggleCircle, TweenInfo.new(0.2), {Position = State and UDim2.new(1, -20, 0.5, -9) or UDim2.new(0, 2, 0.5, -9)}):Play()
                 end
@@ -724,6 +756,8 @@ function Library:CreateWindow(Config)
 
             function Section:AddSlider(Text, Min, Max, Default, Callback)
                 Callback = Callback or function() end
+                if not SectionContainer then return end
+                
                 local Value = Default or Min
                 local Dragging = false
 
@@ -810,6 +844,8 @@ function Library:CreateWindow(Config)
 
             function Section:AddDropdown(Text, Options, Default, Callback)
                 Callback = Callback or function() end
+                if not SectionContainer then return end
+                
                 local Toggled = false
                 local Selected = Default or Options[1] or "Select"
 
@@ -871,6 +907,7 @@ function Library:CreateWindow(Config)
                 })
 
                 local function UpdateSize()
+                    if not Dropdown then return end
                     Dropdown.Size = Toggled and UDim2.new(1, 0, 0, 45 + DropdownLayout.AbsoluteContentSize.Y) or UDim2.new(1, 0, 0, 45)
                 end
 
@@ -946,10 +983,16 @@ function Library:CreateWindow(Config)
 end
 
 function Library:Destroy()
-    for _, Connection in pairs(self.Connections) do
-        Connection:Disconnect()
+    for i, Connection in ipairs(self.Connections) do
+        pcall(function()
+            if Connection then
+                Connection:Disconnect()
+            end
+        end)
     end
-    if SwizyGui then
+    self.Connections = {}
+    
+    if SwizyGui and SwizyGui.Parent then
         SwizyGui:Destroy()
     end
 end
